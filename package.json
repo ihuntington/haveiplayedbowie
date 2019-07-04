@@ -1,0 +1,20 @@
+{
+  "name": "haveiplayedbowie",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/firestore": "^2.2.3",
+    "@hapi/bell": "^10.1.0",
+    "@hapi/hapi": "^18.3.1",
+    "@hapi/vision": "^5.5.2",
+    "axios": "^0.19.0",
+    "handlebars": "^4.1.2"
+  }
+}
