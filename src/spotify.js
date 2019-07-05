@@ -1,4 +1,3 @@
-'use strict';
 const qs = require('querystring');
 const axios = require('axios');
 
@@ -7,56 +6,55 @@ class SpotifyClient {
     this.credentials = credentials;
   }
 
-  async refreshToken() {
-    const clientIdSecret = btoa(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`);
-    const config = {
-      headers: {
-        Authorization: `Basic ${clientIdSecret}`
-      }
-    };
-    const data = qs.stringify({
-      grant_type: 'refresh_token',
-      refresh_token: this.credentials.refreshToken,
-    })
-
+  async _makeRequest(config, attempts = 1) {
     try {
-      const request = axios.post('https://accounts.spotify.com/api/token', data, config);
-      return request.data;
-    } catch (err) {
-      console.log('Unable to refresh token');
-      console.log(err);
-      return;
+      return axios.request(config);
+    } catch (requestError) {
+      if (attempts === 1) {
+        throw requestError;
+      }
     }
   }
 
-  async getRequest(url, config, attempts = 2) {
+  async refreshToken() {
+    const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = process.env;
+    const buffer = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`);
+    const { refreshToken } = this.credentials;
+    const config = {
+      method: 'POST',
+      url: 'https://accounts.spotify.com/api/token',
+      headers: {
+        Authorization: `Basic ${buffer.toString('base64')}`
+      },
+      data: qs.stringify({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      })
+    };
+
     try {
-      return await axios.get(url, config);
-    } catch (err) {
-      if (attempts === 1) {
-        throw err;
-      }
-      return this.getRequest(url, config);
+      const request = this._makeRequest(config);
+      return request.data;
+    } catch (requestError) {
+      console.log(requestError);
+      throw `Unable to refresh access token`;
     }
   }
 
   async getRecentlyPlayed() {
     const config = {
+      method: 'GET',
+      url: 'https://api.spotify.com/v1/me/player/recently-played',
       headers: {
-        'Authorization': `Bearer ${this.credentials.accessToken}`,
+        'Authorization': `Bearer ${this.credentials.token}`,
       },
       params: {
         limit: 50,
       },
-    }
+    };
 
-    try {
-      const request = await axios.get('https://api.spotify.com/v1/me/player/recently-played', config);
-      return request.data;
-    } catch (err) {
-      if ()
-      console.log('Unable to get recently played');
-      console.log(err);
-    }
+    return await this._makeRequest(config);
   }
 }
+
+module.exports = SpotifyClient;
