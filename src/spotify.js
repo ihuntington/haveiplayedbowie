@@ -33,7 +33,7 @@ class SpotifyClient {
     };
 
     try {
-      const request = this._makeRequest(config);
+      const request = await this._makeRequest(config);
       return request.data;
     } catch (requestError) {
       console.log(requestError);

@@ -131,10 +131,10 @@ const start = async () => {
         try {
           const auth = await spotify.refreshToken();
           await user.ref.update({
-            token: auth.data.access_token,
+            token: auth.access_token,
           });
           spotify.credentials = {
-            token: auth.data.access_token,
+            token: auth.access_token,
           };
         } catch (err) {
           console.log(err);
