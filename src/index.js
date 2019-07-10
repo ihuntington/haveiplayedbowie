@@ -6,10 +6,7 @@ const Firestore = require('@google-cloud/firestore');
 const { isToday } = require('./dates');
 const SpotifyClient = require('./spotify');
 
-// david bowie '0oSGxfWSnnOXhD2fKuz2Gy';
-// paul simon '2CvCyf1gEVhI0mX6aFXmVI';
 const ARTIST_ID = process.env.SPOTIFY_ARTIST_ID;
-
 const firestore = new Firestore();
 const users = firestore.collection('users');
 
@@ -32,7 +29,7 @@ const start = async () => {
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
     scope: [process.env.SPOTIFY_SCOPES],
-    isSecure: process.env.BELL_STRATEGY_SECURE === 'true',
+    isSecure: process.env.NODE_ENV === 'production',
   });
 
   server.views({
@@ -41,6 +38,17 @@ const start = async () => {
     },
     relativeTo: __dirname,
     path: 'templates',
+  });
+
+  server.state('data', {
+    ttl: 604800000,
+    isSecure: false,
+    isHttpOnly: true,
+    encoding: 'base64json',
+    clearInvalid: true,
+    strictHeader: true,
+    isSameSite: 'Lax',
+    path: '/',
   });
 
   server.route({
@@ -54,17 +62,23 @@ const start = async () => {
         }
 
         try {
-          const query = firestore.collection('users').where('id', '==', request.auth.credentials.profile.id);
+          const query = users.where('id', '==', request.auth.credentials.profile.id);
           const querySnapshot = await query.get();
 
           if (querySnapshot.docs.length === 0) {
-            const userRef = firestore.collection('users').doc();
+            const userRef = users.doc();
             await userRef.create({
               id: request.auth.credentials.profile.id,
               token: request.auth.credentials.token,
               refreshToken: request.auth.credentials.refreshToken,
             });
           }
+
+          // Encode with Iron? Or use a session ID to map to users
+          h.state('data', {
+            id: request.auth.credentials.profile.id,
+          });
+
         } catch (err) {
           console.log(err);
           return 'Unable to create account';
@@ -87,7 +101,7 @@ const start = async () => {
     method: ['GET'],
     path: '/no',
     handler: function (request, h) {
-      return h.view('no');
+      return h.view('no').unstate('data');
     },
   });
 
@@ -103,7 +117,14 @@ const start = async () => {
     method: ['GET'],
     path: '/',
     handler: async function (request, h) {
-      const query = users.where('id', '==', process.env.SPOTIFY_USER_ID);
+      const data = request.state.data;
+
+      if (!data || !data.id) {
+        console.log('No state or user ID in state');
+        return h.view('no');
+      }
+
+      const query = users.where('id', '==', data.id);
       const snapshot = await query.get();
 
       if (snapshot.docs.length === 0) {
@@ -173,8 +194,8 @@ const start = async () => {
   console.log('Server running on %s', server.info.uri);
 };
 
-// process.on('unhandledRejection', (err) => {
-//   console.log(err);
-// });
+process.on('unhandledRejection', (err) => {
+  console.log(err);
+});
 
 start();
