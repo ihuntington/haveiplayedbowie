@@ -42,7 +42,7 @@ const start = async () => {
 
   server.state('data', {
     ttl: 604800000,
-    isSecure: false,
+    isSecure: process.env.NODE_ENV === 'production',
     isHttpOnly: true,
     encoding: 'base64json',
     clearInvalid: true,
@@ -89,21 +89,23 @@ const start = async () => {
     }
   });
 
-  server.route({
-    method: ['GET'],
-    path: '/yes',
-    handler: function (request, h) {
-      return h.view('yes');
-    },
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    server.route({
+      method: ['GET'],
+      path: '/yes',
+      handler: function (request, h) {
+        return h.view('yes');
+      },
+    });
 
-  server.route({
-    method: ['GET'],
-    path: '/no',
-    handler: function (request, h) {
-      return h.view('no').unstate('data');
-    },
-  });
+    server.route({
+      method: ['GET'],
+      path: '/no',
+      handler: function (request, h) {
+        return h.view('no').unstate('data');
+      },
+    });
+  }
 
   server.route({
     method: ['GET'],
@@ -120,7 +122,7 @@ const start = async () => {
       const data = request.state.data;
 
       if (!data || !data.id) {
-        console.log('No state or user ID in state');
+        console.log('No user ID in state');
         return h.view('no');
       }
 
@@ -128,6 +130,7 @@ const start = async () => {
       const snapshot = await query.get();
 
       if (snapshot.docs.length === 0) {
+        console.log('Could not find user');
         return h.view('no');
       }
 
@@ -158,6 +161,7 @@ const start = async () => {
             token: auth.access_token,
           };
         } catch (err) {
+          console.log('Unable to refresh token');
           console.log(err);
           return h.view('no');
         }
