@@ -57,34 +57,61 @@ const start = async () => {
     options: {
       auth: 'spotify',
       handler: async function (request, h) {
+        let userRef = null;
+
         if (!request.auth.isAuthenticated) {
-          return `Authentication failed due to: ${request.auth.error.message}`;
+          console.log('Authentication failed, redirect to page stating this');
+          return h.redirect('/');
         }
+
+        const credentials = request.auth.credentials;
+        const profile = credentials.profile;
+        const query = users.where('id', '==', profile.id);
 
         try {
-          const query = users.where('id', '==', request.auth.credentials.profile.id);
-          const querySnapshot = await query.get();
+          const snapshot = await query.get();
 
-          if (querySnapshot.docs.length === 0) {
-            const userRef = users.doc();
+          if (snapshot.empty) {
+            userRef = users.doc();
             await userRef.create({
-              id: request.auth.credentials.profile.id,
-              token: request.auth.credentials.token,
-              refreshToken: request.auth.credentials.refreshToken,
+              id: profile.id,
+              token: credentials.token,
+              refreshToken: credentials.refreshToken,
+              profile: {
+                displayName: profile.displayName,
+                image: (!!profile.raw.images.length && profile.raw.images[0].url) || null,
+              },
             });
+
+            h.state('data', {
+              id: userRef.id,
+            });
+
+            return h.redirect('/');
           }
 
-          // Encode with Iron? Or use a session ID to map to users
-          h.state('data', {
-            id: request.auth.credentials.profile.id,
+          userRef = snapshot.docs[0].ref;
+
+          await userRef.update({
+            id: profile.id,
+            token: credentials.token,
+            refreshToken: credentials.refreshToken,
+            profile: {
+              displayName: profile.displayName,
+              image: (!!profile.raw.images.length && profile.raw.images[0].url) || null,
+            },
           });
 
-        } catch (err) {
-          console.log(err);
-          return 'Unable to create account';
-        }
+          h.state('data', {
+            id: userRef.id,
+          });
 
-        return h.redirect('/');
+          return h.redirect('/');
+        } catch (err) {
+          console.log('There was an error creating or updating user');
+          console.log(err);
+          return h.redirect('/').unstate('data');
+        }
       }
     }
   });
@@ -105,6 +132,14 @@ const start = async () => {
         return h.view('no').unstate('data');
       },
     });
+
+    server.route({
+      method: ['GET'],
+      path: '/auth-no',
+      handler: function (request, h) {
+        return h.view('no');
+      },
+    });
   }
 
   server.route({
@@ -119,23 +154,27 @@ const start = async () => {
     method: ['GET'],
     path: '/',
     handler: async function (request, h) {
-      const data = request.state.data;
+      const { state } = request;
 
-      if (!data || !data.id) {
-        console.log('No user ID in state');
-        return h.view('no');
+      if (!state.data || !state.data.id) {
+        return h.view('no', {
+          authenticated: false,
+        });
       }
 
-      const query = users.where('id', '==', data.id);
-      const snapshot = await query.get();
+      const userRef = users.doc(state.data.id);
+      const userDoc = await userRef.get();
 
-      if (snapshot.docs.length === 0) {
-        console.log('Could not find user');
-        return h.view('no');
+      if (!userDoc.exists) {
+        return h.view('no', {
+          authenticated: false,
+        });
       }
 
-      const user = snapshot.docs[0];
-      const spotify = new SpotifyClient(user.data());
+      const spotify = new SpotifyClient({
+        token: userDoc.data().token,
+        refreshToken: userDoc.data().refreshToken,
+      });
 
       let recentlyPlayedTracks = [];
       let hasTokenExpired = false;
@@ -146,32 +185,52 @@ const start = async () => {
         if (err.response.status === 401) {
           hasTokenExpired = true;
         } else {
+          console.log('Unable to fetch recently played tracks');
           console.log(err);
-          return h.view('no');
+          return h.view('no', {
+            authenticated: true,
+            user: userDoc.data().profile,
+            message: {
+              text: 'Unable to get your recently played tracks.',
+            },
+          });
         }
       }
 
       if (hasTokenExpired) {
         try {
           const auth = await spotify.refreshToken();
-          await user.ref.update({
+          await userRef.update({
             token: auth.access_token,
           });
           spotify.credentials = {
             token: auth.access_token,
           };
         } catch (err) {
-          console.log('Unable to refresh token');
+          console.log('Unable to fetch refresh token');
           console.log(err);
-          return h.view('no');
+          return h.view('no', {
+            authenticated: true,
+            user: userDoc.data().profile,
+            message: {
+              text: 'Unable to get your recently played tracks.',
+            },
+          });
         }
       }
 
       try {
         recentlyPlayedTracks = await spotify.getRecentlyPlayed();
       } catch (err) {
+        console.log('Unable to fetch recently played tracks');
         console.log(err);
-        return h.view('no');
+        return h.view('no', {
+          authenticated: true,
+          user: userDoc.data().profile,
+          message: {
+            text: 'Unable to get your recently played tracks.',
+          },
+        });
       }
 
       const tracksByArtist = recentlyPlayedTracks.data.items.filter(isArtist)
@@ -187,10 +246,18 @@ const start = async () => {
       }));
 
       if (tracks.length === 0) {
-        return h.view('no');
+        return h.view('no', {
+          authenticated: true,
+          user: userDoc.data().profile,
+          tracks: [],
+        });
       }
 
-      return h.view('yes', { tracks });
+      return h.view('yes', {
+        authenticated: true,
+        user: userDoc.data().profile,
+        tracks,
+      });
     }
   });
 
