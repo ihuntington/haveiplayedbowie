@@ -116,28 +116,20 @@ const start = async () => {
     }
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    server.route({
-      method: ['GET'],
-      path: '/yes',
-      handler: function (request, h) {
-        return h.view('yes');
-      },
-    });
+  server.route({
+    method: ['GET'],
+    path: '/auth/logout',
+    handler: function (request, h) {
+      return h.redirect('/').unstate('data');
+    },
+  });
 
+  if (process.env.NODE_ENV !== 'production') {
     server.route({
       method: ['GET'],
       path: '/no',
       handler: function (request, h) {
-        return h.view('no').unstate('data');
-      },
-    });
-
-    server.route({
-      method: ['GET'],
-      path: '/auth-no',
-      handler: function (request, h) {
-        return h.view('no');
+        return h.redirect('/').unstate('data');
       },
     });
   }
@@ -157,7 +149,7 @@ const start = async () => {
       const { state } = request;
 
       if (!state.data || !state.data.id) {
-        return h.view('no', {
+        return h.view('main', {
           authenticated: false,
         });
       }
@@ -166,7 +158,7 @@ const start = async () => {
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        return h.view('no', {
+        return h.view('main', {
           authenticated: false,
         });
       }
@@ -187,7 +179,7 @@ const start = async () => {
         } else {
           console.log('Unable to fetch recently played tracks');
           console.log(err);
-          return h.view('no', {
+          return h.view('main', {
             authenticated: true,
             user: userDoc.data().profile,
             message: {
@@ -203,13 +195,11 @@ const start = async () => {
           await userRef.update({
             token: auth.access_token,
           });
-          spotify.credentials = {
-            token: auth.access_token,
-          };
+          spotify.credentials.token = auth.access_token;
         } catch (err) {
           console.log('Unable to fetch refresh token');
           console.log(err);
-          return h.view('no', {
+          return h.view('main', {
             authenticated: true,
             user: userDoc.data().profile,
             message: {
@@ -224,7 +214,7 @@ const start = async () => {
       } catch (err) {
         console.log('Unable to fetch recently played tracks');
         console.log(err);
-        return h.view('no', {
+        return h.view('main', {
           authenticated: true,
           user: userDoc.data().profile,
           message: {
@@ -246,14 +236,14 @@ const start = async () => {
       }));
 
       if (tracks.length === 0) {
-        return h.view('no', {
+        return h.view('main', {
           authenticated: true,
           user: userDoc.data().profile,
           tracks: [],
         });
       }
 
-      return h.view('yes', {
+      return h.view('main', {
         authenticated: true,
         user: userDoc.data().profile,
         tracks,

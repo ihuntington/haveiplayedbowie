@@ -1,0 +1,121 @@
+<html>
+  <head>
+    <title>Have I Played Bowie Today?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: sans-serif;
+        line-height: 1.5;
+      }
+
+      .site-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+      }
+
+      main {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: center;
+      }
+
+      .user-picture {
+        border-radius: 50%;
+        display: block;
+        height: 50px;
+        margin: 0;
+        width: 50px;
+      }
+
+      .question {
+        font-size: 1rem;
+        font-weight: bold;
+      }
+
+      .answer {
+        font-weight: bold;
+      }
+
+      .sign-in {
+        background: #1db954;
+        color: #fff;
+        display: inline-block;
+        margin: 1rem 0;
+        padding: .5rem;
+        text-decoration: none;
+      }
+
+      .sign-out {
+        flex-grow: 0;
+      }
+
+      .tracks {
+        margin: 0 1rem;
+      }
+
+      .tracks li {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin: 2rem 0;
+      }
+
+      .track-name {
+        margin-left: 1rem;
+        order: 2;
+      }
+
+      .track-cover {
+        border-radius: 50%;
+        order: 1;
+      }
+
+      @media screen and (min-width: 40rem) {
+        .tracks {
+          margin: 0 auto;
+          max-width: 40rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{#if authenticated}}
+      <header class="site-header">
+        <img src="{{user.image}}" alt="Profile picture of {{user.displayName}}" class="user-picture" />
+        <a class="sign-out" href="/auth/logout">Sign out</a>
+      </header>
+    {{/if}}
+    <main>
+      <h1 class="question">Have I Played Bowie Today?</h1>
+      {{#if authenticated}}
+        {{#if message}}
+          <p>{{message.text}}</p>
+        {{/if}}
+
+        {{#if tracks}}
+          <ol class="tracks">
+            {{#each tracks}}
+            <li>
+              <span class="track-name">{{track.name}}</span>
+              <img class="track-cover" src="{{album.image}}" alt="{{album.name}}" width="100" height="100" />
+            </li>
+            {{/each}}
+          </ol>
+        {{else}}
+          <p>Not, one note of Bowie.</p>
+        {{/if}}
+      {{else}}
+        <a href="/auth/spotify" class="sign-in">Sign in with <b>Spotify</b> to find out</a>
+      {{/if}}
+    </main>
+  </body>
+</html>
