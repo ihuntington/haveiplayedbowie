@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/debug-agent": "^4.0.1",
     "@google-cloud/firestore": "^2.2.3",
     "@hapi/bell": "^10.1.0",
     "@hapi/hapi": "^18.3.1",

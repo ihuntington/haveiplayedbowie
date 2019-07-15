@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV === 'production') {
+  require('@google-cloud/debug-agent').start();
+}
+
 const Hapi = require('@hapi/hapi');
 const Bell = require('@hapi/bell');
 const Vision = require('@hapi/vision');
