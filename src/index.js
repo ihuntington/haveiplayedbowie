@@ -6,21 +6,13 @@ if (process.env.NODE_ENV === 'production') {
 
 const process = require('process');
 const Hapi = require('@hapi/hapi');
-const Bell = require('@hapi/bell');
 const Vision = require('@hapi/vision');
 const handlebars = require('handlebars');
 const { Pool } = require('pg');
-const { isToday } = require('./dates');
-const SpotifyClient = require('./spotify');
-
-const ARTIST_ID = process.env.SPOTIFY_ARTIST_ID;
-
-function isArtist({ track }) {
-  return track.artists.find(({ id }) => id === ARTIST_ID);
-}
 
 const config = {
   user: process.env.SQL_USER,
+  password: process.env.SQL_PASSWORD,
   database: process.env.SQL_DATABASE,
 };
 
@@ -39,17 +31,7 @@ const start = async () => {
     host: '0.0.0.0',
   });
 
-  await server.register(Bell);
   await server.register(Vision);
-
-  server.auth.strategy('spotify', 'bell', {
-    provider: 'spotify',
-    password: process.env.BELL_STRATEGY_PASSWORD,
-    clientId: process.env.SPOTIFY_CLIENT_ID,
-    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-    scope: [process.env.SPOTIFY_SCOPES],
-    isSecure: process.env.NODE_ENV === 'production',
-  });
 
   server.views({
     engines: {
