@@ -1,10 +1,11 @@
 'use strict';
 
+const process = require('process');
+
 if (process.env.NODE_ENV === 'production') {
   require('@google-cloud/debug-agent').start();
 }
 
-const process = require('process');
 const Hapi = require('@hapi/hapi');
 const Vision = require('@hapi/vision');
 const handlebars = require('handlebars');
@@ -21,6 +22,9 @@ if (
   process.env.NODE_ENV === 'production'
 ) {
   config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
+} else {
+  config.host = 'localhost';
+  config.port = 5432;
 }
 
 const pool = new Pool(config);
