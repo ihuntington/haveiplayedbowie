@@ -1,0 +1,9 @@
+# Unix style
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# JS: I find four spaces easier to read
+[*.js]
+indent_style = space
+indent_size = 4
