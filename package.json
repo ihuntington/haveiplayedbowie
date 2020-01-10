@@ -10,12 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/debug-agent": "^4.0.1",
-    "@hapi/bell": "^10.1.0",
-    "@hapi/hapi": "^18.3.1",
-    "@hapi/vision": "^5.5.2",
-    "axios": "^0.19.0",
-    "handlebars": "^4.1.2",
-    "pg": "^7.17.0"
+    "@google-cloud/debug-agent": "^4.2.1",
+    "@hapi/hapi": "^18.4.0",
+    "@hapi/vision": "^5.5.4",
+    "handlebars": "^4.7.0"
   }
 }
