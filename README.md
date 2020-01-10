@@ -1,9 +1,5 @@
 # Have I Played Bowie Today?
 
-A simple website that uses Spotify to find out whether you have listened to Bowie today.
+Sometime in mid-June or July 2019 when at work I wondered whether I had listened to David Bowie that day. Originally this website simply said yes or no via connecting to Spotify. Since then it still answers that basic question but now lists all the tracks I listened to. There is still lot to do such as a design and tests but for now it works.
 
-## Example artist IDs
-
-- Bowie: 0oSGxfWSnnOXhD2fKuz2Gy
-- Paul Simon: 2CvCyf1gEVhI0mX6aFXmVI
-
+If you'd like to use / see the previous version look through the history.

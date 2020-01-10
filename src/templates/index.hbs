@@ -1,0 +1,42 @@
+<div>
+    <h2>{{calendar-date this.date}}</h2>
+    {{#if hasBowie}}
+        <p><em>Yes!</em> I've had my Bowie fix.</p>
+    {{/if}}
+    {{#unless hasBowie}}
+        <p><em>No!</em> I forgot all about David.</p>
+    {{/unless}}
+
+    <ul>
+        {{#if this.previous}}
+        <li>
+            <a href="{{this.previous}}">Previous day</a>
+        </li>
+        {{/if}}
+        {{#if this.next}}
+        <li>
+            <a href="{{this.next}}">Next day</a>
+        </li>
+        {{/if}}
+    </ul>
+
+    {{#if this.items}}
+    <table>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td>
+                    <time datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
+                </td>
+                <td>
+                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a> by <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/if}}
+    {{#unless items}}
+    <p>No tracks were played today.</p>
+    {{/unless}}
+</div>
