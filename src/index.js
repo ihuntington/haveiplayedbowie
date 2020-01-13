@@ -91,6 +91,27 @@ async function start() {
         }
     });
 
+    server.route({
+        method: 'GET',
+        path: '/years/{year}',
+        handler: async (request, h) => {
+            const present = new Date();
+            const from = new Date(request.params.year, 0, 1);
+            const to = new Date(request.params.year, 11, 31);
+
+            if (from.getFullYear() > present.getFullYear()) {
+                return h.response().code(400);
+            }
+
+            try {
+                const result = await db.getTopTracks(from, to);
+                return result;
+            } catch (err) {
+                return h.response().code(500);
+            }
+        }
+    });
+
     await server.start();
     console.log('Server running on %s', server.info.uri);
 }

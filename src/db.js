@@ -26,6 +26,7 @@ client.connect();
 
 module.exports = {
     getArtistById: (id) => client.one(sql.getArtistById, [id]),
+    getTopTracks: (from, to) => client.manyOrNone(sql.getTopTracks, { from, to }),
     getTrack: (track) => client.one(sql.getTrack, [track]),
     getTracksByDate: (date) => client.query(sql.getTracksByDate, [date]),
 };

@@ -3,6 +3,16 @@ const queries = {
         SELECT id, name FROM artists
         WHERE id = $1
     `,
+    getTopTracks: `
+        SELECT tr.name AS track_name, ar.name AS artist_name, COUNT(sc.track_id) AS play_count FROM scrobbles sc
+        JOIN tracks tr ON tr.id = sc.track_id
+        JOIN artists_tracks artr ON artr.track_id = tr.id
+        JOIN artists ar ON ar.id = artr.artist_id
+        WHERE sc.played_at BETWEEN $(from) and $(to)
+        GROUP BY tr.name, ar.name
+        ORDER BY play_count DESC
+        LIMIT 10
+    `,
     getTrack: `
         SELECT tr.id AS track_id, tr.name AS track_name, ar.name AS artist_name, ar.id AS artist_id, tr.duration_ms AS duration FROM tracks tr
         JOIN artists_tracks artr ON artr.track_id = tr.id
