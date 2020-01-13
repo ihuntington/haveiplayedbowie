@@ -104,7 +104,7 @@ async function start() {
             }
 
             try {
-                const result = await db.getTopTracks(from, to);
+                const result = await db.getSummary(from, to);
                 return result;
             } catch (err) {
                 return h.response().code(500);
