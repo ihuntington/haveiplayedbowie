@@ -1,0 +1,73 @@
+<div>
+    <h2>Top 10 artists</h2>
+    {{#if this.artists}}
+    <table>
+        <tbody>
+            {{#each artists}}
+            <tr>
+                <td>
+                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                </td>
+                <td>
+                    {{this.total}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/if}}
+    <h2>Top 10 tracks</h2>
+    {{#if this.tracks}}
+    <table>
+        <tbody>
+            {{#each tracks}}
+            <tr>
+                <td>
+                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                </td>
+                <td>
+                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                </td>
+                <td>
+                    {{this.total}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/if}}
+    <h2>Total Bowies plays</h2>
+    {{#if this.bowieTotal}}
+    <table>
+        <tbody>
+            {{#each bowieTotal}}
+            <tr>
+                <td>
+                    <a href="/tracks/{{this.artist_id}}">{{this.artist_name}}</a>
+                </td>
+                <td>
+                    {{this.total}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/if}}
+    <h2>Top 10 Bowie tracks</h2>
+    {{#if this.bowieTracks}}
+    <table>
+        <tbody>
+            {{#each bowieTracks}}
+            <tr>
+                <td>
+                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                </td>
+                <td>
+                    {{this.total}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    {{/if}}
+</div>

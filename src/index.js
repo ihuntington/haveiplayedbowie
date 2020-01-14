@@ -113,7 +113,7 @@ async function start() {
 
             try {
                 const result = await db.getSummary(from, to);
-                return result;
+                return h.view('chart', result);
             } catch (err) {
                 return h.response().code(500);
             }
