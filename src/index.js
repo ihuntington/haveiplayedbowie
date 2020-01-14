@@ -99,18 +99,19 @@ async function start() {
         handler: async (request, h) => {
             const present = new Date();
             const year = request.params.year || present.getUTCFullYear();
-            let from = new Date(year, 0, 1);
-            let to = new Date(year, 11, 31);
+
+            let from = new Date(year, 0);
+            let to = new Date(from.getUTCFullYear() + 1, 0);
             let datestampFormat = 'yyyy';
 
             if (request.params.month) {
                 const month = request.params.month > 0 ? request.params.month - 1 : 0;
-                from.setMonth(month, 1);
-                to = lastDayOfMonth(new Date(year, month, 1));
+                from.setMonth(month);
+                to = new Date(year, from.getMonth() + 1);
                 datestampFormat = 'LLLL yyyy';
             }
 
-            if (from.getFullYear() > present.getFullYear()) {
+            if (from.getUTCFullYear() > present.getUTCFullYear()) {
                 return h.response().code(400);
             }
 
