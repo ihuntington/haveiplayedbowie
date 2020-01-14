@@ -44,7 +44,7 @@ const queries = {
         GROUP BY ar.id, ar.name
     `,
     getTrack: `
-        SELECT tr.id AS track_id, tr.name AS track_name, ar.name AS artist_name, ar.id AS artist_id, tr.duration_ms AS duration FROM tracks tr
+        SELECT tr.id AS track_id, tr.name AS track_name, ar.id AS artist_id, ar.name AS artist_name, tr.duration_ms AS duration FROM tracks tr
         JOIN artists_tracks artr ON artr.track_id = tr.id
         JOIN artists ar ON ar.id = artr.artist_id
         WHERE tr.id = $1
