@@ -10,6 +10,7 @@ const Hapi = require('@hapi/hapi');
 const addDays = require('date-fns/addDays');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
+const lastDayOfMonth = require('date-fns/lastDayOfMonth');
 const db = require('./db');
 
 async function start() {
@@ -93,11 +94,18 @@ async function start() {
 
     server.route({
         method: 'GET',
-        path: '/years/{year}',
+        path: '/charts/{year}/{month?}',
         handler: async (request, h) => {
             const present = new Date();
-            const from = new Date(request.params.year, 0, 1);
-            const to = new Date(request.params.year, 11, 31);
+            const year = request.params.year || present.getUTCFullYear();
+            let from = new Date(year, 0, 1);
+            let to = new Date(year, 11, 31);
+
+            if (request.params.month) {
+                const month = request.params.month > 0 ? request.params.month - 1 : 0;
+                from.setMonth(month, 1);
+                to = lastDayOfMonth(new Date(year, month, 1));
+            }
 
             if (from.getFullYear() > present.getFullYear()) {
                 return h.response().code(400);
