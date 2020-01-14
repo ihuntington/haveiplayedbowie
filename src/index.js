@@ -8,6 +8,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const Hapi = require('@hapi/hapi');
 const addDays = require('date-fns/addDays');
+const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
 const lastDayOfMonth = require('date-fns/lastDayOfMonth');
@@ -100,20 +101,27 @@ async function start() {
             const year = request.params.year || present.getUTCFullYear();
             let from = new Date(year, 0, 1);
             let to = new Date(year, 11, 31);
+            let datestampFormat = 'yyyy';
 
             if (request.params.month) {
                 const month = request.params.month > 0 ? request.params.month - 1 : 0;
                 from.setMonth(month, 1);
                 to = lastDayOfMonth(new Date(year, month, 1));
+                datestampFormat = 'LLLL yyyy';
             }
 
             if (from.getFullYear() > present.getFullYear()) {
                 return h.response().code(400);
             }
 
+            let datestamp = format(from, datestampFormat);
+
             try {
                 const result = await db.getSummary(from, to);
-                return h.view('chart', result);
+                return h.view('chart', {
+                    ...result,
+                    datestamp,
+                });
             } catch (err) {
                 return h.response().code(500);
             }
