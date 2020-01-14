@@ -2,6 +2,12 @@
     <h2>Top 10 artists</h2>
     {{#if this.artists}}
     <table>
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Play count</th>
+            </tr>
+        </thead>
         <tbody>
             {{#each artists}}
             <tr>
@@ -19,6 +25,12 @@
     <h2>Top 10 tracks</h2>
     {{#if this.tracks}}
     <table>
+        <thead>
+            <tr>
+                <th>Track</th>
+                <th>Artist</th>
+            </tr>
+        </thead>
         <tbody>
             {{#each tracks}}
             <tr>
@@ -39,6 +51,12 @@
     <h2>Total Bowies plays</h2>
     {{#if this.bowieTotal}}
     <table>
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Play count</th>
+            </tr>
+        </thead>
         <tbody>
             {{#each bowieTotal}}
             <tr>
@@ -56,6 +74,12 @@
     <h2>Top 10 Bowie tracks</h2>
     {{#if this.bowieTracks}}
     <table>
+        <thead>
+            <tr>
+                <th>Track</th>
+                <th>Play count</th>
+            </tr>
+        </thead>
         <tbody>
             {{#each bowieTracks}}
             <tr>
