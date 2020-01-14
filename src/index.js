@@ -11,7 +11,6 @@ const addDays = require('date-fns/addDays');
 const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
-const lastDayOfMonth = require('date-fns/lastDayOfMonth');
 const db = require('./db');
 
 async function start() {
@@ -85,7 +84,7 @@ async function start() {
         path: '/artists/{artist}',
         handler: async (request, h) => {
             try {
-                const result = await db.getArtistById(request.params.artist);
+                const result = await db.getArtistSummary(request.params.artist);
                 return h.view('artist', result);
             } catch (err) {
                 return h.response().code(404);

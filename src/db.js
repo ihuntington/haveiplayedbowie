@@ -24,8 +24,35 @@ const client = pgp(config);
 
 client.connect();
 
+const transformTotal = (item) => ({
+    ...item,
+    total: parseInt(item.total, 10),
+});
+
 module.exports = {
-    getArtistById: (id) => client.one(sql.getArtistById, [id]),
+    getArtistById: (id) => client.one(sql.getArtistById, { id }),
+    getArtistScrobblesByDateRange: (artist, from, to) => client.manyOrNone(sql.getArtistScrobblesByDateRange, { artist, from , to }),
+    getArtistSummary: (id) => {
+        return client.task((task) => {
+            const params = {
+                id,
+                // TODO: remove the hard coding when further years added
+                from: new Date(2019, 0, 1),
+                to: new Date(2020, 0, 1),
+            };
+
+            return Promise.all([
+                task.one(sql.getArtistById, { id }),
+                task.map(sql.getArtistScrobblesByDateRange, params, transformTotal),
+                task.map(sql.getTopTracksByArtist, params, transformTotal),
+            ])
+            .then(([artist, chart, topTracks]) => ({
+                artist,
+                chart,
+                topTracks,
+            }));
+        });
+    },
     getSummary: (from, to) => {
         return client.task((task) => {
             const { BOWIE_ARTIST_ID } = process.env;
@@ -34,13 +61,9 @@ module.exports = {
                 to,
             };
             const paramsWithBowie = {
-                artist: BOWIE_ARTIST_ID,
+                id: BOWIE_ARTIST_ID,
                 ...params,
             };
-            const transformTotal = (item) => ({
-                ...item,
-                total: parseInt(item.total, 10),
-            });
             return Promise.all([
                 task.map(sql.getTopArtists, params, transformTotal),
                 task.map(sql.getTopTracks, params, transformTotal),

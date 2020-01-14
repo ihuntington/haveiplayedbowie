@@ -1,14 +1,23 @@
 const queries = {
     getArtistById: `
         SELECT id, name FROM artists
-        WHERE id = $1
+        WHERE id = $(id)
+    `,
+    getArtistScrobblesByDateRange: `
+        SELECT DATE_TRUNC('month', sc.played_at) AS datestamp, COUNT(sc.played_at) as total FROM scrobbles sc
+        JOIN tracks tr ON tr.id = sc.track_id
+        JOIN artists_tracks artr ON artr.track_id = tr.id
+        WHERE artr.artist_id = $(id)
+        AND sc.played_at BETWEEN $(from) AND $(to)
+        GROUP BY datestamp
+        ORDER BY datestamp
     `,
     getTopArtists: `
         SELECT ar.id AS artist_id, ar.name AS artist_name, COUNT(sc.track_id) AS total FROM scrobbles sc
         JOIN tracks tr ON tr.id = sc.track_id
         JOIN artists_tracks artr ON artr.track_id = tr.id
         JOIN artists ar ON ar.id = artr.artist_id
-        WHERE sc.played_at BETWEEN $(from) and $(to)
+        WHERE sc.played_at BETWEEN $(from) AND $(to)
         GROUP BY ar.id, ar.name
         ORDER BY total DESC
         LIMIT 10
@@ -28,7 +37,7 @@ const queries = {
         JOIN tracks tr ON tr.id = sc.track_id
         JOIN artists_tracks artr ON artr.track_id = tr.id
         JOIN artists ar ON ar.id = artr.artist_id
-        WHERE ar.id = $(artist)
+        WHERE ar.id = $(id)
         AND sc.played_at BETWEEN $(from) AND $(to)
         GROUP BY tr.id, tr.name
         ORDER BY total DESC
@@ -39,7 +48,7 @@ const queries = {
         JOIN tracks tr ON tr.id = sc.track_id
         JOIN artists_tracks artr ON artr.track_id = tr.id
         JOIN artists ar ON ar.id = artr.artist_id
-        WHERE ar.id = $(artist)
+        WHERE ar.id = $(id)
         AND sc.played_at BETWEEN $(from) AND $(to)
         GROUP BY ar.id, ar.name
     `,
