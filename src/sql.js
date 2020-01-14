@@ -44,10 +44,12 @@ const queries = {
         GROUP BY ar.id, ar.name
     `,
     getTrack: `
-        SELECT tr.id AS track_id, tr.name AS track_name, ar.id AS artist_id, ar.name AS artist_name, tr.duration_ms AS duration FROM tracks tr
+        SELECT tr.id AS track_id, tr.name AS track_name, ar.id AS artist_id, ar.name AS artist_name, tr.duration_ms AS duration, COUNT(played_at) AS total FROM scrobbles sc
+        JOIN tracks tr ON tr.id = sc.track_id
         JOIN artists_tracks artr ON artr.track_id = tr.id
         JOIN artists ar ON ar.id = artr.artist_id
         WHERE tr.id = $1
+        GROUP BY tr.id, tr.name, ar.id, ar.name
     `,
     getTracksByDate: `
         SELECT tr.id as track_id, tr.name as track_name, ar.id as artist_id, ar.name as artist_name, tr.duration_ms, sc.played_at FROM scrobbles sc
