@@ -3,6 +3,7 @@
 const process = require('process');
 const pgp = require('pg-promise')();
 const sql = require('./sql');
+const sqlTest = require('./sql-test');
 
 const config = {
     user: process.env.SQL_USER,
@@ -31,19 +32,27 @@ const transformTotal = (item) => ({
 
 module.exports = {
     getArtistById: (id) => client.one(sql.getArtistById, { id }),
-    getArtistScrobblesByDateRange: (artist, from, to) => client.manyOrNone(sql.getArtistScrobblesByDateRange, { artist, from , to }),
-    getArtistSummary: (id) => {
+    // getArtistScrobblesByDateRange: (artist, from, to) => client.manyOrNone(sql.getArtistScrobblesByDateRange, { artist, from , to }),
+    getArtistScrobblesByDateRange: (id, from, to) => {
+        const params = {
+            id,
+            from,
+            to,
+            year: from.getFullYear(),
+        };
+        return client.manyOrNone(sqlTest.artists.scrobblesByMonth, params);
+    },
+    getArtistSummary: (id, from, to) => {
         return client.task((task) => {
             const params = {
                 id,
-                // TODO: remove the hard coding when further years added
-                from: new Date(2019, 0, 1),
-                to: new Date(2020, 0, 1),
+                from,
+                to,
             };
 
             return Promise.all([
                 task.one(sql.getArtistById, { id }),
-                task.map(sql.getArtistScrobblesByDateRange, params, transformTotal),
+                task.map(sqlTest.artists.scrobblesByMonth, { ...params, year: from.getFullYear() }, transformTotal),
                 task.map(sql.getTopTracksByArtist, params, transformTotal),
             ])
             .then(([artist, chart, topTracks]) => ({
