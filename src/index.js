@@ -11,6 +11,9 @@ const addDays = require('date-fns/addDays');
 const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
+const getMinutes = require('date-fns/getMinutes');
+const getTime = require('date-fns/getTime');
+const differenceInMinutes = require('date-fns/differenceInMinutes');
 const db = require('./db');
 
 function getHourlyIntervals(dateLeft, dateRight) {
@@ -79,22 +82,54 @@ async function start() {
             const hours = getHourlyIntervals(parsedDate, nextDate);
             const timeRange = hours.map((time) => ({ time, items: [] }));
 
-            let tracksWithPlayEnd = result.map((track, index, arr) => {
-                const start = track.played_at.valueOf();
+            let count = 0;
+            let events = [];
+
+            while (count < result.length) {
+                const track = result[count];
+                const start = getTime(track.played_at);
 
                 let end;
                 let nextTrack;
                 let skipped = false;
 
-                if ((index + 1) !== arr.length) {
-                    nextTrack = arr[index + 1];
+                if (getMinutes(track.played_at) !== 0) {
+                    if (count === 0) {
+                        const startTime = new Date(track.played_at).setMinutes(0, 0, 0);
+                        const endTime = new Date(track.played_at);
+                        events.push({
+                            type: 'space',
+                            // minutes: getMinutes(track.played_at),
+                            minutes: differenceInMinutes(endTime, startTime),
+                            played_at: new Date(startTime),
+                            played_end: endTime,
+                        });
+                    } else {
+                        const prev = result[count - 1];
+                        const prevStart = getTime(prev.played_at);
+                        const prevEnd = prevStart + prev.duration_ms;
+                        const minutes = differenceInMinutes(prevEnd, start);
 
-                    if (start === nextTrack.played_at.valueOf()) {
+                        if (getMinutes(prevEnd) !== getMinutes(start)) {
+                            events.push({
+                                type: 'space',
+                                minutes,
+                                played_at: new Date(prevEnd),
+                                played_end: new Date(start),
+                            });
+                        }
+                    }
+                }
+
+                if ((count + 1) !== result.length) {
+                    nextTrack = result[count + 1];
+
+                    if (start === getTime(nextTrack.played_at)) {
                         skipped = true;
                         end = track.played_at;
                     } else {
-                        let endMinutes = new Date(start + track.duration_ms).getMinutes();
-                        let nextStartMinutes = nextTrack.played_at.getMinutes();
+                        let endMinutes = getMinutes(new Date(start + track.duration_ms));
+                        let nextStartMinutes = getMinutes(nextTrack.played_at);
 
                         end = new Date(start + track.duration_ms);
 
@@ -106,15 +141,18 @@ async function start() {
                     end = new Date(start + track.duration_ms);
                 }
 
-                return {
+                events.push({
                     ...track,
+                    type: 'event',
                     played_end: end,
                     skipped,
                     minutes: Math.floor((end - start) / (60 * 1000)) || 1,
-                };
-            });
+                });
 
-            for (const event of tracksWithPlayEnd) {
+                count += 1;
+            }
+
+            for (const event of events) {
                 const d = event.played_at.getDate()
                 const h = event.played_at.getHours()
                 const matchedHour = timeRange.findIndex((item) => {

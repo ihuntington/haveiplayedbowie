@@ -1,0 +1,21 @@
+<div class="calendar">
+    <style>
+        :root {
+            --event-unit-height: 50px;
+        }
+
+        .hour {
+            border-top: 1px solid #ccc;
+            min-height: var(--event-unit-height);
+        }
+
+        .time {
+            font-size: .75rem;
+        }
+    </style>
+    {{#each hours}}
+    <div class="hour">
+        <time class="time" datetime="{{date-time this}}">{{time this}}</time>
+    </div>
+    {{/each}}
+</div>

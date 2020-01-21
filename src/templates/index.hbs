@@ -56,7 +56,16 @@
             {{#each this.items}}
             <div class="card" style="height: calc(var(--card-unit-height) + ({{this.minutes}} * var(--card-unit-height)));">
                 <time class="start-time" datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
-                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a> by <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                <time class="start-time" datetime="{{date-time this.played_end}}">{{time this.played_end}}</time>
+                {{#if this.track_id}}
+                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                {{/if}}
+                {{#if this.artist_id}}
+                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                {{/if}}
+                {{#if this.duration_ms}}
+                <time>{{duration this.duration_ms}}</time>
+                {{/if}}
             </div>
             {{/each}}
         </div>
