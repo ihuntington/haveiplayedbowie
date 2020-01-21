@@ -13,6 +13,26 @@ const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
 const db = require('./db');
 
+function getHourlyIntervals(dateLeft, dateRight) {
+    const MILLISECONDS_IN_HOUR = 3600000;
+
+    if (dateLeft > dateRight) {
+        throw new Error('Date 1 must be a time before Date 2');
+    }
+
+    const start = new Date(dateLeft).setMinutes(0);
+    const end = new Date(dateRight).setMinutes(0); // + MILLISECONDS_IN_HOUR;
+    const dates = [];
+    let curr = new Date(start).getTime();
+
+    while (curr <= end) {
+        dates.push(new Date(curr));
+        curr += MILLISECONDS_IN_HOUR;
+    }
+
+    return dates;
+}
+
 async function start() {
     const server = Hapi.server({
         port: process.env.PORT || 3000,
@@ -56,10 +76,57 @@ async function start() {
             const previousDate = addDays(parsedDate, -1);
             const nextDate = addDays(parsedDate, 1);
 
+            const hours = getHourlyIntervals(parsedDate, nextDate);
+            const timeRange = hours.map((time) => ({ time, items: [] }));
+
+            let tracksWithPlayEnd = result.map((track, index, arr) => {
+                const start = track.played_at.valueOf();
+
+                let end;
+                let nextTrack;
+                let skipped = false;
+
+                if ((index + 1) !== arr.length) {
+                    nextTrack = arr[index + 1];
+
+                    if (start === nextTrack.played_at.valueOf()) {
+                        skipped = true;
+                        end = track.played_at;
+                    } else {
+                        let endMinutes = new Date(start + track.duration_ms).getMinutes();
+                        let nextStartMinutes = nextTrack.played_at.getMinutes();
+
+                        end = new Date(start + track.duration_ms);
+
+                        if (endMinutes === nextStartMinutes) {
+                            end.setSeconds(0);
+                        }
+                    }
+                } else {
+                    end = new Date(start + track.duration_ms);
+                }
+
+                return {
+                    ...track,
+                    played_end: end,
+                    skipped,
+                    minutes: Math.floor((end - start) / (60 * 1000)) || 1,
+                };
+            });
+
+            for (const event of tracksWithPlayEnd) {
+                const d = event.played_at.getDate()
+                const h = event.played_at.getHours()
+                const matchedHour = timeRange.findIndex((item) => {
+                    return item.time.getDate() === d && item.time.getHours() === h;
+                });
+                timeRange[matchedHour].items.push({ ...event })
+            }
+
             return h.view('index', {
                 date: parsedDate,
                 hasBowie,
-                items: result,
+                items: timeRange,
                 previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
                 next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
             });

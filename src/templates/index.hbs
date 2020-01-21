@@ -20,21 +20,48 @@
         {{/if}}
     </ul>
 
-    {{#if this.items}}
-    <table>
-        <tbody>
-            {{#each items}}
-            <tr>
-                <td>
-                    <time datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
-                </td>
-                <td>
-                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a> by <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
-                </td>
-            </tr>
+    <style>
+        :root {
+            --card-unit-height: 20px;
+            --event-unit-height: 50px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            display: block;
+            min-height: var(--card-unit-height);
+            margin-left: 59px;
+        }
+        .hour {
+            background: rgba(0, 0, 0, .1);
+            border-top: 1px solid #ccc;
+            min-height: var(--event-unit-height);
+            position: relative;
+        }
+
+        .time {
+            background: #fff;
+            font-size: .75rem;
+            padding: 0 1rem;
+            position: absolute;
+            margin-top: -.5rem;
+        }
+    </style>
+    {{#if items}}
+    <div class="container">
+        {{#each items}}
+        <div class="hour">
+            <time class="time" datetime="{{date-time this.time}}">{{time this.time}}</time>
+            {{#each this.items}}
+            <div class="card" style="height: calc(var(--card-unit-height) + ({{this.minutes}} * var(--card-unit-height)));">
+                <time class="start-time" datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
+                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a> by <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+            </div>
             {{/each}}
-        </tbody>
-    </table>
+        </div>
+        {{/each}}
+    </div>
     {{/if}}
     {{#unless items}}
     <p>No tracks were played today.</p>
