@@ -12,6 +12,7 @@ const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
 const getHours = require('date-fns/getHours');
+const differenceInMinutes = require('date-fns/differenceInMinutes');
 const db = require('./db');
 
 function getHourlyIntervals(dateLeft, dateRight) {
@@ -134,6 +135,12 @@ async function start() {
 
                     if (track.startTime === nextTrack.startTime) {
                         skipped = true;
+                    }
+
+                    const differenceBetweenTracks = nextTrack.startTime - track.endTime;
+
+                    if (differenceBetweenTracks > 0 && differenceBetweenTracks <= 60000) {
+                        trackHeight = differenceInMinutes(nextTrack.startTime, track.startTime);
                     }
                 }
 
