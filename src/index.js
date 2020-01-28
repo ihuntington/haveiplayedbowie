@@ -12,6 +12,7 @@ const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
 const getHours = require('date-fns/getHours');
+const getMinutes = require('date-fns/getMinutes');
 const differenceInMinutes = require('date-fns/differenceInMinutes');
 const db = require('./db');
 
@@ -102,6 +103,23 @@ async function start() {
         return track.artist_id === process.env.BOWIE_ARTIST_ID;
     }
 
+    function calculatePosY(minutes) {
+        const TEN_MINUTES_IN_PX = 20;
+
+        if (minutes === 0) {
+            return 0;
+        }
+
+        if (minutes < 10) {
+            return minutes * 2;
+        }
+
+        const tens = (Math.floor(minutes / 10) * TEN_MINUTES_IN_PX);
+        const ones = ((minutes % 10) * (TEN_MINUTES_IN_PX / 10));
+
+        return tens + ones;
+    }
+
     server.route({
         method: 'GET',
         path: '/',
@@ -126,9 +144,11 @@ async function start() {
 
             while (count < tracksWithTimes.length) {
                 const track = tracksWithTimes[count];
+                // TODO: what is there is no duration as spotify could not find it
+                // 60000 is temp
                 const roundedTrackDuration = Math.round((track.duration_ms / 1000) / 60);
                 let skipped = false;
-                let trackHeight = roundedTrackDuration;
+                let trackHeight = roundedTrackDuration || 1;
 
                 if (count + 1 !== tracksWithTimes.length) {
                     const nextTrack = tracksWithTimes[count + 1];
@@ -137,10 +157,12 @@ async function start() {
                         skipped = true;
                     }
 
-                    const differenceBetweenTracks = nextTrack.startTime - track.endTime;
+                    if (nextTrack.status === 'COMPLETE') {
+                        const differenceBetweenTracks = nextTrack.startTime - track.endTime;
 
-                    if (differenceBetweenTracks > 0 && differenceBetweenTracks <= 60000) {
-                        trackHeight = differenceInMinutes(nextTrack.startTime, track.startTime);
+                        if (differenceBetweenTracks > 0 && differenceBetweenTracks <= 60000) {
+                            trackHeight = differenceInMinutes(nextTrack.startTime, track.startTime);
+                        }
                     }
                 }
 
@@ -154,18 +176,63 @@ async function start() {
             }
 
             for (const event of events) {
-                const eventDate = event.played_at.getDate()
-                const eventHour = event.played_at.getHours()
+                const eventDate = event.played_at.getDate();
+                const eventHour = event.played_at.getHours();
                 const matchedHour = timeRange.findIndex((item) => {
                     return item.time.getDate() === eventDate && item.time.getHours() === eventHour;
                 });
+
                 timeRange[matchedHour].items.push({ ...event })
             }
+
+            const tr = timeRange.map(({ time, items }) => {
+                let hourHeight = 20 * 6;
+
+                const tracks = items.map((track, index, arr) => {
+                    let posY = 0;
+
+                    if (index === 0) {
+                        posY = calculatePosY(getMinutes(track.startTime));
+                        hourHeight = posY + (track.trackHeight * 20);
+                    } else {
+                        const previousTrack = arr[index - 1];
+                        let offset = 0;
+
+                        if (
+                            previousTrack.status === 'COMPLETE'
+                            && track.startTime - previousTrack.endTime > 60000
+                        ) {
+                            const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
+                            // offset = calculatePosY(diff);
+                            offset = diff * 2;
+                        }
+
+                        posY = hourHeight + offset;
+                        hourHeight = posY + (track.trackHeight * 20);
+                    }
+
+                    if (track.endsInNextHour) {
+                        // TODO: 20 === height in pixels
+                        hourHeight = hourHeight - (getMinutes(track.endTime) * 20);
+                    }
+
+                    return {
+                        ...track,
+                        posY,
+                    }
+                });
+
+                return {
+                    time,
+                    items: tracks,
+                    hourHeight,
+                };
+            });
 
             return h.view('index', {
                 date: isoDate,
                 hasBowie,
-                items: timeRange,
+                items: tr,
                 previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
                 next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
             });

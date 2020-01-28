@@ -27,15 +27,15 @@
         }
 
         .card {
-            border: 1px solid #ccc;
-            border-radius: 2px;
+            background: #ccc;
             display: block;
             min-height: var(--card-unit-height);
-            margin-left: 59px;
+            position: absolute;
+            transform: translateX(60px);
         }
+
         .hour {
-            background: rgba(0, 0, 0, .1);
-            border-top: 1px solid #ccc;
+            border-top: 1px solid orange;
             min-height: var(--event-unit-height);
             position: relative;
         }
@@ -51,10 +51,10 @@
     {{#if items}}
     <div class="container">
         {{#each items}}
-        <div class="hour">
+        <div class="hour" style="height: {{this.hourHeight}}px;">
             <time class="time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="card" style="height: calc({{this.trackHeight}} * var(--card-unit-height));">
+            <div class="card" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
                 <time class="start-time" datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
                 {{#if this.track_id}}
                 <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
@@ -65,6 +65,7 @@
                 {{#if this.duration_ms}}
                 <time>{{duration this.duration_ms}}</time>
                 {{/if}}
+                {{#if this.skipped}}<span>Skipped</span>{{/if}}
             </div>
             {{/each}}
         </div>
