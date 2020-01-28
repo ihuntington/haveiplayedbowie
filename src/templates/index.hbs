@@ -54,9 +54,8 @@
         <div class="hour">
             <time class="time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="card" style="height: calc(var(--card-unit-height) + ({{this.minutes}} * var(--card-unit-height)));">
+            <div class="card" style="height: calc({{this.trackHeight}} * var(--card-unit-height));">
                 <time class="start-time" datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
-                <time class="start-time" datetime="{{date-time this.played_end}}">{{time this.played_end}}</time>
                 {{#if this.track_id}}
                 <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
                 {{/if}}

@@ -11,9 +11,7 @@ const addDays = require('date-fns/addDays');
 const format = require('date-fns/format');
 const formatISO = require('date-fns/formatISO');
 const parseISO = require('date-fns/parseISO');
-const getMinutes = require('date-fns/getMinutes');
-const getTime = require('date-fns/getTime');
-const differenceInMinutes = require('date-fns/differenceInMinutes');
+const getHours = require('date-fns/getHours');
 const db = require('./db');
 
 function getHourlyIntervals(dateLeft, dateRight) {
@@ -66,103 +64,99 @@ async function start() {
         },
     });
 
+    function getDuration(ms) {
+        const minutes = Math.floor((ms / 1000) / 60);
+        const seconds = Math.round((ms / 1000) % 60);
+        return {
+            minutes,
+            seconds,
+            formatted: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+        };
+    }
+
+    function getTrackTimings(track) {
+        let duration = null;
+        let endTime = null;
+        let startTime = track.played_at.getTime();
+        let status = 'INCOMPLETE';
+        let endsInNextHour = false;
+
+        if (track.duration_ms) {
+            duration = getDuration(track.duration_ms);
+            endTime = startTime + track.duration_ms;
+            status = 'COMPLETE';
+            endsInNextHour = getHours(startTime) !== getHours(endTime);
+        }
+
+        return {
+            startTime,
+            endTime,
+            endsInNextHour,
+            duration,
+            status,
+        };
+    }
+
+    function filterByBowie(track) {
+        return track.artist_id === process.env.BOWIE_ARTIST_ID;
+    }
+
     server.route({
         method: 'GET',
         path: '/',
         handler: async (request, h) => {
             const formatDate = (date) => formatISO(date, { representation: 'date' });
             const formatQuery = (date) => `${request.path}?date=${formatDate(date)}`;
+            const isoDate = parseISO(request.query.date || '2019-12-31');
+            const previousDate = addDays(isoDate, -1);
+            const nextDate = addDays(isoDate, 1);
 
-            const parsedDate = parseISO(request.query.date || '2019-12-31');
-            const result = await db.getTracksByDate(parsedDate);
-            const hasBowie = result.filter((item) => item.artist_id == process.env.BOWIE_ARTIST_ID);
-            const previousDate = addDays(parsedDate, -1);
-            const nextDate = addDays(parsedDate, 1);
-
-            const hours = getHourlyIntervals(parsedDate, nextDate);
+            const response = await db.getTracksByDate(isoDate);
+            const tracksWithTimes = response.map((track) => ({
+                ...track,
+                ...getTrackTimings(track),
+            }))
+            const hasBowie = response.filter(filterByBowie);
+            const hours = getHourlyIntervals(isoDate, addDays(isoDate, 1));
             const timeRange = hours.map((time) => ({ time, items: [] }));
 
+            const events = [];
             let count = 0;
-            let events = [];
 
-            while (count < result.length) {
-                const track = result[count];
-                const start = getTime(track.played_at);
-
-                let end;
-                let nextTrack;
+            while (count < tracksWithTimes.length) {
+                const track = tracksWithTimes[count];
+                const roundedTrackDuration = Math.round((track.duration_ms / 1000) / 60);
                 let skipped = false;
+                let trackHeight = roundedTrackDuration;
 
-                if (getMinutes(track.played_at) !== 0) {
-                    if (count === 0) {
-                        const startTime = new Date(track.played_at).setMinutes(0, 0, 0);
-                        const endTime = new Date(track.played_at);
-                        events.push({
-                            type: 'space',
-                            // minutes: getMinutes(track.played_at),
-                            minutes: differenceInMinutes(endTime, startTime),
-                            played_at: new Date(startTime),
-                            played_end: endTime,
-                        });
-                    } else {
-                        const prev = result[count - 1];
-                        const prevStart = getTime(prev.played_at);
-                        const prevEnd = prevStart + prev.duration_ms;
-                        const minutes = differenceInMinutes(prevEnd, start);
+                if (count + 1 !== tracksWithTimes.length) {
+                    const nextTrack = tracksWithTimes[count + 1];
 
-                        if (getMinutes(prevEnd) !== getMinutes(start)) {
-                            events.push({
-                                type: 'space',
-                                minutes,
-                                played_at: new Date(prevEnd),
-                                played_end: new Date(start),
-                            });
-                        }
-                    }
-                }
-
-                if ((count + 1) !== result.length) {
-                    nextTrack = result[count + 1];
-
-                    if (start === getTime(nextTrack.played_at)) {
+                    if (track.startTime === nextTrack.startTime) {
                         skipped = true;
-                        end = track.played_at;
-                    } else {
-                        let endMinutes = getMinutes(new Date(start + track.duration_ms));
-                        let nextStartMinutes = getMinutes(nextTrack.played_at);
-
-                        end = new Date(start + track.duration_ms);
-
-                        if (endMinutes === nextStartMinutes) {
-                            end.setSeconds(0);
-                        }
                     }
-                } else {
-                    end = new Date(start + track.duration_ms);
                 }
 
                 events.push({
                     ...track,
-                    type: 'event',
-                    played_end: end,
+                    trackHeight,
                     skipped,
-                    minutes: Math.floor((end - start) / (60 * 1000)) || 1,
                 });
 
                 count += 1;
             }
 
             for (const event of events) {
-                const d = event.played_at.getDate()
-                const h = event.played_at.getHours()
+                const eventDate = event.played_at.getDate()
+                const eventHour = event.played_at.getHours()
                 const matchedHour = timeRange.findIndex((item) => {
-                    return item.time.getDate() === d && item.time.getHours() === h;
+                    return item.time.getDate() === eventDate && item.time.getHours() === eventHour;
                 });
                 timeRange[matchedHour].items.push({ ...event })
             }
 
             return h.view('index', {
-                date: parsedDate,
+                date: isoDate,
                 hasBowie,
                 items: timeRange,
                 previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
