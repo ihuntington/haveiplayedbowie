@@ -141,12 +141,24 @@ async function start() {
             const nextDate = addDays(isoDate, 1);
 
             const response = await db.getTracksByDate(isoDate);
+
+            if (response.length === 0) {
+                return h.view('index', {
+                    date: isoDate,
+                    hasBowie: false,
+                    items: [],
+                    previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
+                    next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
+                });
+            }
+
             const tracksWithTimes = response.map((track) => ({
                 ...track,
                 ...getTrackTimings(track),
             }))
             const hasBowie = response.filter(filterByBowie);
-            const hours = getHourlyIntervals(isoDate, addDays(isoDate, 1));
+            // const hours = getHourlyIntervals(isoDate, addDays(isoDate, 1));
+            const hours = getHourlyIntervals(response[0].played_at, last(response).played_at);
             const timeRange = hours.map((time) => ({ time, items: [] }));
 
             const events = [];
