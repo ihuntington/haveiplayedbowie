@@ -104,7 +104,7 @@ async function tracks(request, h) {
     const response = await db.getTracksByDate(isoDate);
 
     if (response.length === 0) {
-        return h.view('index', {
+        return h.view('diary', {
             date: isoDate,
             hasBowie: false,
             items: [],
@@ -240,7 +240,7 @@ async function tracks(request, h) {
         };
     });
 
-    return h.view('index', {
+    return h.view('diary', {
         date: isoDate,
         hasBowie,
         items: tr,
