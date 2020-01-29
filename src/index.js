@@ -21,14 +21,15 @@ async function start() {
         engines: {
             hbs: {
                 module: require('handlebars'),
-                isCached: false,
+                isCached: process.env.NODE_ENV === 'production',
             },
         },
         relativeTo: __dirname,
-        path: './templates',
+        path: './view/templates',
         layout: true,
-        layoutPath: './templates/layouts',
-        helpersPath: './helpers'
+        layoutPath: './view/templates/layouts',
+        helpersPath: './view/helpers',
+        partialsPath: './view/partials',
     });
 
     server.route({
