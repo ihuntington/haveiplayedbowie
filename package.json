@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-cloud/debug-agent": "^4.2.1",
     "@hapi/hapi": "^18.4.0",
+    "@hapi/inert": "^5.2.2",
     "@hapi/vision": "^5.5.4",
     "date-fns": "^2.9.0",
     "handlebars": "^4.7.0",

@@ -6,6 +6,7 @@ if (process.env.NODE_ENV === 'production') {
   require('@google-cloud/debug-agent').start();
 }
 
+const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const routes = require('./routes');
 
@@ -15,6 +16,7 @@ async function start() {
         host: '0.0.0.0',
     });
 
+    await server.register(require('@hapi/inert'));
     await server.register(require('@hapi/vision'));
 
     server.views({
@@ -30,6 +32,16 @@ async function start() {
         layoutPath: './view/templates/layouts',
         helpersPath: './view/helpers',
         partialsPath: './view/partials',
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/assets/{param*}',
+        handler: {
+            directory: {
+                path: Path.join(__dirname, 'assets')
+            }
+        }
     });
 
     server.route({
@@ -60,6 +72,14 @@ async function start() {
         method: 'GET',
         path: '/charts/{year}/{month?}',
         handler: routes.charts,
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/',
+        handler: (request, h) => {
+            return h.view('index');
+        }
     });
 
     await server.start();

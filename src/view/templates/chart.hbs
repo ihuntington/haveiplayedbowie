@@ -1,99 +1,85 @@
-<div>
-    <h2>Charts for {{datestamp}}</h2>
-    <h2>Top 10 artists</h2>
-    {{#if this.artists}}
-    <table>
-        <thead>
-            <tr>
-                <th>Artist</th>
-                <th>Play count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each artists}}
-            <tr>
-                <td>
-                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
-                </td>
-                <td>
-                    {{this.total}}
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    {{/if}}
-    <h2>Top 10 tracks</h2>
-    {{#if this.tracks}}
-    <table>
-        <thead>
-            <tr>
-                <th>Track</th>
-                <th>Artist</th>
-                <th>Play count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each tracks}}
-            <tr>
-                <td>
-                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
-                </td>
-                <td>
-                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
-                </td>
-                <td>
-                    {{this.total}}
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    {{/if}}
-    <h2>Total Bowies plays</h2>
-    {{#if this.bowieTotal}}
-    <table>
-        <thead>
-            <tr>
-                <th>Artist</th>
-                <th>Play count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each bowieTotal}}
-            <tr>
-                <td>
-                    <a href="/tracks/{{this.artist_id}}">{{this.artist_name}}</a>
-                </td>
-                <td>
-                    {{this.total}}
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    {{/if}}
-    <h2>Top 10 Bowie tracks</h2>
-    {{#if this.bowieTracks}}
-    <table>
-        <thead>
-            <tr>
-                <th>Track</th>
-                <th>Play count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each bowieTracks}}
-            <tr>
-                <td>
-                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
-                </td>
-                <td>
-                    {{this.total}}
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-    {{/if}}
-</div>
+<h2>Charts for {{datestamp}}</h2>
+
+{{#if this.bowieTracks}}
+<h3>
+    <span>Top 10 Bowie tracks</span>
+</h3>
+<table class="chart-table columns-2">
+    <thead>
+        <tr>
+            <th>Track</th>
+            <th>Play count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each bowieTracks}}
+        <tr>
+            <td>
+                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+            </td>
+            <td>
+                {{this.total}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+{{/if}}
+
+<h3>
+    <span>Top 10 artists</span>
+</h3>
+
+{{#if this.artists}}
+<table class="chart-table columns-2">
+    <thead>
+        <tr>
+            <th>Artist</th>
+            <th>Play count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each artists}}
+        <tr>
+            <td>
+                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+            </td>
+            <td>
+                {{this.total}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+{{/if}}
+
+<h3>
+    <span>Top 10 tracks</span>
+</h3>
+
+{{#if this.tracks}}
+<table class="chart-table columns-3">
+    <thead>
+        <tr>
+            <th>Track</th>
+            <th>Artist</th>
+            <th>Play count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each tracks}}
+        <tr>
+            <td>
+                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+            </td>
+            <td>
+                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+            </td>
+            <td>
+                {{this.total}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+{{/if}}
