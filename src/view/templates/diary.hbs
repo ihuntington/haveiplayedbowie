@@ -20,51 +20,29 @@
         {{/if}}
     </ul>
 
-    <style>
-        :root {
-            --card-unit-height: 20px;
-            --event-unit-height: calc(1rem * 12);
-        }
-
-        .card {
-            background: #ccc;
-            display: block;
-            min-height: var(--card-unit-height);
-            position: absolute;
-            transform: translateX(60px);
-        }
-
-        .hour {
-            min-height: var(--event-unit-height);
-            position: relative;
-        }
-
-        .time {
-            background: #fff;
-            font-size: .75rem;
-            padding: 0 1rem;
-            position: absolute;
-            margin-top: -.5rem;
-        }
-    </style>
     {{#if items}}
     <div class="container">
         {{#each items}}
         <div class="hour" style="height: {{this.hourHeight}}px;">
-            <time class="time" datetime="{{date-time this.time}}">{{time this.time}}</time>
+            <time class="hour-time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="card" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
-                <time class="start-time" datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
-                {{#if this.track_id}}
-                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
-                {{/if}}
-                {{#if this.artist_id}}
-                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
-                {{/if}}
+            <div class="event" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
+                <div class="event-time">
+                    <time datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
+                </div>
+                <div class="event-body">
+                    {{#if this.track_id}}
+                    <a href="/tracks/{{this.track_id}}" class="event-track-name">{{this.track_name}}</a>
+                    {{/if}}
+                    {{#if this.artist_id}}
+                    <span class="separator">&#183;</span>
+                    <a href="/artists/{{this.artist_id}}" class="event-artist-name">{{this.artist_name}}</a>
+                    {{/if}}
+                    {{#if this.skipped}}<span class="event-skipped">Skipped</span>{{/if}}
+                </div>
                 {{#if this.duration_ms}}
-                <time>{{duration this.duration_ms}}</time>
+                <time class="event-duration">{{duration this.duration_ms}}</time>
                 {{/if}}
-                {{#if this.skipped}}<span>Skipped</span>{{/if}}
             </div>
             {{/each}}
         </div>

@@ -1,3 +1,8 @@
+:root {
+    --card-unit-height: 20px;
+    --event-unit-height: calc(1rem * 12);
+}
+
 body {
     background: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -32,10 +37,6 @@ li {
     margin: 0;
 }
 
-.site-header {
-    display: flex;
-}
-
 .site-name {
     background: #070707;
     border-radius: 3px;
@@ -49,10 +50,8 @@ li {
 }
 
 .site-nav {
-    align-items: center;
-    display: flex;
-    flex: 1 1 auto;
-    margin-left: 1rem;
+    border-bottom: 1px solid hsl(0, 0%, 2.7%);
+    padding: .5rem 0;
 }
 
 .site-nav a {
@@ -63,6 +62,21 @@ li {
 
 .site-nav a:first-of-type {
     margin-left: 0;
+}
+
+@media (min-width: 32rem) {
+    .site-header {
+        display: flex;
+    }
+
+    .site-nav {
+        align-items: center;
+        border-bottom: 0;
+        display: flex;
+        flex: 1 1 auto;
+        margin-left: 1rem;
+        padding: 0;
+    }
 }
 
 h2 {
@@ -105,7 +119,7 @@ h3 span {
 }
 
 .chart-table th, .chart-table td {
-    padding: .125rem 1rem;
+    padding: .5rem 1rem;
     text-align: left;
     vertical-align: top;
 }
@@ -119,10 +133,124 @@ h3 span {
     background: hsl(0, 0%, 95%);
 }
 
-.columns-2 th, .columns-2 td {
-    width: 50%;
+.columns-3 thead th:nth-child(2),
+.columns-3 tbody td:nth-child(2) {
+    display: none;
 }
 
-.columns-3 th, .columns-3 td {
-    width: calc(100% / 3);
+.columns-3 tbody .a11y-when-small {
+    display: block;
+}
+
+.chart-table__count {
+    width: 25%;
+}
+
+.event {
+    background: hsl(149, 60.8%, 90%);
+    display: grid;
+    grid-area: events;
+    grid-template-rows: auto 1rem;
+    grid-template-areas:
+        "content"
+        "meta";
+    min-height: var(--card-unit-height);
+    position: absolute;
+    width: 100%;
+    z-index: 2;
+}
+
+.event::before {
+    background: hsl(149, 60%, 70%);
+    content: '';
+    display: block;
+    height: 2px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.event-body {
+    display: flex;
+    flex-direction: column;
+    grid-area: content;
+    overflow-x: hidden;
+    margin: .25rem .5rem;
+}
+
+.event-time {
+    background: hsl(149, 60%, 70%);
+    left: -2.625rem;
+    padding: 2px;
+    position: absolute;
+    top: 0;
+}
+
+.hour {
+    display: grid;
+    grid-template-columns: 90px auto;
+    grid-template-areas: "times events";
+    min-height: var(--event-unit-height);
+    position: relative;
+}
+
+.hour::before {
+    background: hsla(0, 0%, 50%, .1);
+    content: '';
+    display: block;
+    height: 1px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.event-duration {
+    align-self: flex-end;
+    display: inline-block;
+    font-size: .75rem;
+    grid-area: meta;
+    margin: 0 .25rem;
+    padding: .125rem .25rem;
+}
+
+.event-track-name,
+.event-artist-name {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.event-artist-name {
+    font-size: 0.875rem;
+}
+
+.separator {
+    display: none;
+}
+
+
+@media (min-width: 32rem) {
+    .columns-2 th,
+    .columns-2 td {
+        width: 50%;
+    }
+
+    .chart-table__count {
+        text-align: left;
+    }
+}
+
+@media (min-width: 40rem) {
+    .chart-table.columns-3 thead th:nth-child(2),
+    .chart-table.columns-3 tbody td:nth-child(2) {
+        display: table-cell;
+    }
+
+    .chart-table.columns-3 tbody .a11y-when-small {
+        display: none;
+    }
+
+    .chart-table.columns-3 th,
+    .chart-table.columns-3 td {
+        width: calc(100% / 3);
+    }
 }

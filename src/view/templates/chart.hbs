@@ -8,7 +8,7 @@
     <thead>
         <tr>
             <th>Track</th>
-            <th>Play count</th>
+            <th class="chart-table__count">Plays</th>
         </tr>
     </thead>
     <tbody>
@@ -17,7 +17,7 @@
             <td>
                 <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
             </td>
-            <td>
+            <td class="chart-table__count">
                 {{this.total}}
             </td>
         </tr>
@@ -35,7 +35,7 @@
     <thead>
         <tr>
             <th>Artist</th>
-            <th>Play count</th>
+            <th class="chart-table__count">Plays</th>
         </tr>
     </thead>
     <tbody>
@@ -44,7 +44,7 @@
             <td>
                 <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
             </td>
-            <td>
+            <td class="chart-table__count">
                 {{this.total}}
             </td>
         </tr>
@@ -63,7 +63,7 @@
         <tr>
             <th>Track</th>
             <th>Artist</th>
-            <th>Play count</th>
+            <th class="chart-table__count">Plays</th>
         </tr>
     </thead>
     <tbody>
@@ -71,11 +71,15 @@
         <tr>
             <td>
                 <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                <div class="a11y-when-small">
+                    <span>by</span>
+                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                </div>
             </td>
             <td>
                 <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
             </td>
-            <td>
+            <td class="chart-table__count">
                 {{this.total}}
             </td>
         </tr>
