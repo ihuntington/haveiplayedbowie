@@ -1,5 +1,5 @@
 :root {
-    --card-unit-height: 20px;
+    --card-unit-height: 24px;
     --event-unit-height: calc(1rem * 12);
 }
 

@@ -78,14 +78,14 @@ function filterByBowie(track) {
 
 // TODO: rename this function
 function calculatePosY(minutes) {
-    const TEN_MINUTES_IN_PX = 20;
+    const TEN_MINUTES_IN_PX = 24;
 
     if (minutes === 0) {
         return 0;
     }
 
     if (minutes < 10) {
-        return minutes * 2;
+        return minutes * (TEN_MINUTES_IN_PX / 10);
     }
 
     const tens = (Math.floor(minutes / 10) * TEN_MINUTES_IN_PX);
@@ -170,7 +170,7 @@ async function tracks(request, h) {
     }
 
     const tr = timeRange.map(({ time, items }, rangeIndex, rangeArr) => {
-        let hourHeight = 20 * 6;
+        let hourHeight = 24 * 6;
 
         const tracks = items.map((track, tracksIndex, tracksArr) => {
             let posY = 0;
@@ -191,11 +191,11 @@ async function tracks(request, h) {
                     const roundedEndTime = previousTrack.startTime + (previousTrack.trackHeight * 60000);
                     const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, time);
                     const diff = differenceInMinutes(track.startTime, roundedEndTime);
-                    posY = (previousTrackMinutesInHour * 20) + calculatePosY(diff);
-                    hourHeight = posY + (track.trackHeight * 20);
+                    posY = (previousTrackMinutesInHour * 24) + calculatePosY(diff);
+                    hourHeight = posY + (track.trackHeight * 24);
                 } else {
                     posY = calculatePosY(getMinutes(track.startTime));
-                    hourHeight = posY + (track.trackHeight * 20);
+                    hourHeight = posY + (track.trackHeight * 24);
                 }
             } else {
                 let offset = 0;
@@ -206,11 +206,11 @@ async function tracks(request, h) {
                 ) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
                     // offset = calculatePosY(diff);
-                    offset = diff * 2;
+                    offset = diff * (24 / 10);
                 }
 
                 posY = hourHeight + offset;
-                hourHeight = posY + (track.trackHeight * 20);
+                hourHeight = posY + (track.trackHeight * 24);
             }
 
             // Last track in the hour and it does not end in the next hour
@@ -224,7 +224,7 @@ async function tracks(request, h) {
             // Adjust height of the hour row if last track ends in the next hour
             if (track.endsInNextHour) {
                 const roundedEndTime = track.startTime + (track.trackHeight * 60000);
-                hourHeight = hourHeight - (getMinutes(roundedEndTime) * 20);
+                hourHeight = hourHeight - (getMinutes(roundedEndTime) * 24);
             }
 
             return {
