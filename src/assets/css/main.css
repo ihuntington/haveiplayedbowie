@@ -181,7 +181,7 @@ h3 span {
 .event-time {
     background: hsl(149, 60%, 70%);
     left: -2.625rem;
-    padding: 2px;
+    padding: 0 2px;
     position: absolute;
     top: 0;
 }
