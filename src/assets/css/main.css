@@ -195,10 +195,10 @@ h3 span {
 }
 
 .hour::before {
-    background: hsla(0, 0%, 50%, .1);
+    background: hsl(0, 0%, 80%);
     content: '';
     display: block;
-    height: 1px;
+    height: 2px;
     position: absolute;
     top: 0;
     width: 100%;
