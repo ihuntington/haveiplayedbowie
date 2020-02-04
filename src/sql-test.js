@@ -10,4 +10,9 @@ module.exports = {
     artists: {
         scrobblesByMonth: sql('artists/scrobbles-by-month.sql'),
     },
+    users: {
+        add: sql('users/add.sql'),
+        find: sql('users/find.sql'),
+        findByEmail: sql('users/find-by-email.sql'),
+    },
 };
