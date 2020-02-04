@@ -1,0 +1,17 @@
+{
+  "name": "bowie-changes",
+  "version": "1.0.0",
+  "description": "Changes service for requesting recently played tracks from streaming services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Ian Huntington",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "@hapi/hapi": "^18.4.0"
+  }
+}
