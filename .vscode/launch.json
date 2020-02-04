@@ -7,6 +7,16 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Spotify Recently Played",
+            "program": "${workspaceFolder}/service-changes/index.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program",
             "skipFiles": [
                 "<node_internals>/**"
