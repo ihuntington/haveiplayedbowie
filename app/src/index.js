@@ -13,7 +13,7 @@ const db = require('./db');
 
 async function start() {
     const server = Hapi.server({
-        port: process.env.PORT || 8080,
+        port: process.env.PORT || 3000,
         host: '0.0.0.0',
     });
 
@@ -34,7 +34,7 @@ async function start() {
         layout: true,
         layoutPath: './view/templates/layouts',
         helpersPath: './view/helpers',
-        partialsPath: './view/partials',
+        // partialsPath: './view/partials',
     });
 
     server.auth.strategy('session', 'cookie', {
