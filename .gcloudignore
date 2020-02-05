@@ -20,3 +20,5 @@ node_modules/
 .vscode/
 .editorconfig
 README.md
+
+dump/
