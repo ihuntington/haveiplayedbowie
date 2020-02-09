@@ -12,7 +12,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "NODE_ENV": "development"
+            }
         },
         {
             "type": "node",
@@ -22,7 +25,10 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/app/src/index.js",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "NODE_ENV": "development"
+            }
         }
     ]
 }
