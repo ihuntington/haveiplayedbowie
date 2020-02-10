@@ -7,12 +7,13 @@ const Spotify = require('./spotify');
 
 async function getRecentlyPlayed(user) {
     const spotify = new Spotify(user.token, user.refresh_token);
+    const after = user.recently_played_at && user.recently_played_at.getTime() || null;
     const output = {
         user
     };
 
     try {
-        const { tokens, data } = await spotify.recentlyPlayed();
+        const { tokens, data } = await spotify.recentlyPlayed(after);
 
         output.user.token = tokens.token;
         output.user.refresh_token = tokens.refreshToken;
@@ -37,7 +38,7 @@ async function* importTracks(uid, items) {
         const output = {};
 
         try {
-            const data = await db.importTracks(uid, item);
+            const data = await db.importTrack(uid, item);
             output.status = 'success';
             output.data = data;
         } catch (err) {
@@ -74,7 +75,7 @@ async function start() {
             let users;
 
             try {
-                users = await db.getUsers();
+                users = await db.getUsersByRecentlyPlayed();
             } catch (err) {
                 console.log('Cannot fetch users');
                 console.log(err.stack);
@@ -82,13 +83,20 @@ async function start() {
             }
 
             const recentlyPlayedGenerator = makeRecentlyPlayedGenerator(users);
+            const data = [];
 
             // TODO: I feel like there is a better way to do this
             for await (const result of recentlyPlayedGenerator) {
                 console.log('Import tracks status', result.status);
-                if (result.status === 'error') {
+                if (result.status === 'success') {
+                    data.push(result.data);
+                } else {
                     console.log(result.message);
                 }
+            }
+
+            if (process.env.NODE_ENV === 'development') {
+                return h.response({ data }).code(200);
             }
 
             return h.response().code(200);

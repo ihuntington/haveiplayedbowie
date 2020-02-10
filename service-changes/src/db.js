@@ -78,15 +78,23 @@ async function getInsertScrobble(context, scrobble) {
     return record || await context.one(sql.scrobbles.insert, scrobble);
 }
 
+async function updateRecentlyPlayed(context, user_id) {
+    const now = new Date(Date.now());
+    return await context.none(sql.users.updateRecentlyPlayed, { user_id, now });
+}
+
 module.exports = {
     getUsers: () => client.manyOrNone(sql.users.readAll),
-    importTracks: (uid, item) => {
+    getUsersByRecentlyPlayed: () => client.manyOrNone(sql.users.readByRecentlyPlayed),
+    importTrack: (uid, item) => {
         return client.tx('import-recently-played', async (tx) => {
             // const artists = await tx.batch(item.artists.map((artist, index) => getInsertArtist(tx, artist.name, index)));
             const artist = await getInsertArtist(tx, item.artists[0].name);
             const track = await getInsertTrack(tx, { name: item.name, spotify_id: item.id, duration_ms: item.duration_ms }, artist);
             const artistTrack = await getInsertArtistTrack(tx, artist, track);
             const scrobble = await getInsertScrobble(tx, { track_id: track.track_id, played_at: item.played_at, user_id: uid });
+
+            await updateRecentlyPlayed(tx, uid);
 
             return {
                 artist,

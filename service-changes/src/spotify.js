@@ -58,7 +58,7 @@ class Spotify {
             });
     }
 
-    recentlyPlayed() {
+    recentlyPlayed(after) {
         const url = 'https://api.spotify.com/v1/me/player/recently-played';
         const options = {
             method: 'GET',
@@ -66,9 +66,13 @@ class Spotify {
                 'Authorization': `Bearer ${this.token}`,
             },
             qs: {
-                limit: 3
+                limit: 50
             }
         };
+
+        if (after) {
+            options.qs.after = after;
+        }
 
         return request(url, options)
             .then((response) => JSON.parse(response))

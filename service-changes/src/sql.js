@@ -19,7 +19,9 @@ module.exports = {
     },
     users: {
         readAll: sql('users/read-all.sql'),
+        readByRecentlyPlayed: sql('users/read-by-recently-played.sql'),
         updateTokens: sql('users/update-tokens.sql'),
+        updateRecentlyPlayed: sql('users/update-recently-played.sql'),
     },
     scrobbles: {
         find: sql('scrobbles/find.sql'),
