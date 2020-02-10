@@ -83,7 +83,7 @@ async function start() {
 
             const recentlyPlayedGenerator = makeRecentlyPlayedGenerator(users);
 
-            // I feel that there is probably a better way to do this
+            // TODO: I feel like there is a better way to do this
             for await (const result of recentlyPlayedGenerator) {
                 console.log('Import tracks status', result.status);
                 if (result.status === 'error') {
