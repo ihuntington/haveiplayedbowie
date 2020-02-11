@@ -69,9 +69,15 @@ async function start() {
 
     server.route({
         method: 'GET',
-        path: '/',
+        path: '/recently-played',
         handler: async (request, h) => {
-            // TODO: check that request came from Cron Task
+            if (
+                process.env.NODE_ENV === 'production' &&
+                !request.headers['X-Appengine-Cron']
+            ) {
+                return h.redirect('https://www.haveiplayedbowie.today');
+            }
+
             let users;
 
             try {
