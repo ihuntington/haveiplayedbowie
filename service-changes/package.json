@@ -1,0 +1,22 @@
+{
+  "name": "hipbt-service-changes",
+  "version": "1.0.0",
+  "description": "HIPBT Ch-ch-changes service to request recently played tracks",
+  "main": "src/index.js",
+  "dependencies": {
+    "@hapi/hapi": "^18.4.0",
+    "pg-promise": "^10.4.2",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ian Huntington",
+  "license": "ISC",
+  "private": true
+}
