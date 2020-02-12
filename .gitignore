@@ -1,5 +1,4 @@
 node_modules
-app.yaml
 env.yaml
 .env
 dump
