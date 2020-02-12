@@ -1,6 +1,13 @@
 'use strict';
 
 const process = require('process');
+
+if (process.env.NODE_ENV === 'production') {
+    require('@google-cloud/debug-agent').start({
+        allowExpressions: true,
+    });
+}
+
 const Hapi = require('@hapi/hapi');
 const db = require('./db');
 const Spotify = require('./spotify');
@@ -73,7 +80,7 @@ async function start() {
         handler: async (request, h) => {
             if (
                 process.env.NODE_ENV === 'production' &&
-                !request.headers['X-Appengine-Cron']
+                !request.headers['x-appengine-cron']
             ) {
                 return h.redirect('https://www.haveiplayedbowie.today');
             }
