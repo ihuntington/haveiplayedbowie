@@ -72,6 +72,8 @@ async function start() {
         password: process.env.SPOTIFY_COOKIE_PASSWORD,
         clientId: process.env.SPOTIFY_CLIENT_ID,
         clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+        // App engine runs as non-https
+        forceHttps: process.env.NODE_ENV === 'production',
         isSecure: process.env.NODE_ENV === 'production',
         scope: ['user-read-email', 'user-read-recently-played']
     });
@@ -189,7 +191,6 @@ async function start() {
 
 process.on('unhandledRejection', (err) => {
     console.log(err);
-    process.exit(1);
 });
 
 start();
