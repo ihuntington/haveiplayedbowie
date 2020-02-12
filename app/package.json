@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/debug-agent": "^4.2.1",
+    "@google-cloud/debug-agent": "^4.2.2",
     "@hapi/bell": "^11.1.0",
     "@hapi/cookie": "^10.1.2",
     "@hapi/hapi": "^18.4.0",

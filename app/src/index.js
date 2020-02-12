@@ -3,7 +3,9 @@
 const process = require('process');
 
 if (process.env.NODE_ENV === 'production') {
-  require('@google-cloud/debug-agent').start();
+    require('@google-cloud/debug-agent').start({
+        allowExpressions: true,
+    });
 }
 
 const Path = require('path');
