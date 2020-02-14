@@ -5,6 +5,7 @@ const auth = require('./auth');
 const charts = require('./charts');
 const diary = require('./diary');
 const track = require('./track');
+const users = require('./users');
 
 module.exports = {
     artist,
@@ -12,4 +13,5 @@ module.exports = {
     charts,
     diary,
     track,
+    users,
 };

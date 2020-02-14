@@ -10,6 +10,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
+const Joi = require('@hapi/joi');
 const routes = require('./routes');
 const db = require('./db');
 
@@ -101,6 +102,30 @@ async function start() {
         method: 'GET',
         path: '/diary',
         handler: routes.diary,
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/users/{user}/diary',
+        config: {
+            // pre: [{
+            //     method: await function(/* request, h */) {
+            //         // The return value is assigned to request.pre.test in the
+            //         // actual request handler
+            //         return 'example of preRequest handler';
+            //     },
+            //     assign: 'test',
+            // }],
+            handler: routes.users.diary,
+            validate: {
+                params: Joi.object({
+                    user: Joi.string().min(2).max(50),
+                }),
+                query: Joi.object({
+                    date: Joi.date().iso().max('now'),
+                }),
+            }
+        }
     });
 
     server.route({
