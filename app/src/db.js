@@ -95,4 +95,12 @@ module.exports = {
     getUser: (id) => client.oneOrNone(sqlTest.users.find, { id }),
     getUserByEmail: (email) => client.oneOrNone(sqlTest.users.findByEmail, { email }),
     addUser: (user) => client.one(sqlTest.users.add, { ...user }),
+    getScrobbles: (username, date) => {
+        return client.task(task => {
+            return task.one('SELECT id FROM users WHERE username = $1', [username])
+                .then(({ id: uid }) => {
+                    return task.manyOrNone(sqlTest.scrobbles.findByUserAndDate, { uid, date })
+                });
+        }).then(data => data);
+    },
 };
