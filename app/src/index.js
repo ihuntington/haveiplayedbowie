@@ -100,22 +100,8 @@ async function start() {
 
     server.route({
         method: 'GET',
-        path: '/diary',
-        handler: routes.diary,
-    });
-
-    server.route({
-        method: 'GET',
         path: '/users/{user}/diary',
         config: {
-            // pre: [{
-            //     method: await function(/* request, h */) {
-            //         // The return value is assigned to request.pre.test in the
-            //         // actual request handler
-            //         return 'example of preRequest handler';
-            //     },
-            //     assign: 'test',
-            // }],
             handler: routes.users.diary,
             validate: {
                 params: Joi.object({
