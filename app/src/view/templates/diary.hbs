@@ -8,25 +8,25 @@
     {{/unless}}
 
     <ul>
-        {{#if this.previous}}
+        {{#if links.previous}}
         <li>
-            <a href="{{this.previous}}">Previous day</a>
+            <a href="{{links.previous}}">Previous day</a>
         </li>
         {{/if}}
-        {{#if this.next}}
+        {{#if links.next}}
         <li>
-            <a href="{{this.next}}">Next day</a>
+            <a href="{{links.next}}">Next day</a>
         </li>
         {{/if}}
     </ul>
 
-    {{#if items}}
+    {{#if hours}}
     <div class="container">
-        {{#each items}}
+        {{#each hours}}
         <div class="hour" style="height: {{this.hourHeight}}px;">
             <time class="hour-time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="event" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
+            <div class="event" style="height: calc({{this.roundedDuration}} * var(--card-unit-height)); top: {{this.posY}}px;">
                 <div class="event-time">
                     <time datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
                 </div>
@@ -49,7 +49,7 @@
         {{/each}}
     </div>
     {{/if}}
-    {{#unless items}}
+    {{#unless hours}}
     <p>No tracks were played today.</p>
     {{/unless}}
 </div>

@@ -5,6 +5,7 @@ const formatISO = require('date-fns/formatISO');
 const isToday = require('date-fns/isToday');
 const { errors } = require('pg-promise');
 const db = require('../db');
+const createDiary = require('./diary');
 
 function formatDate(date) {
     return formatISO(date, { representation: 'date' });
@@ -24,10 +25,13 @@ async function diary(request, h) {
         next: isToday(queryDate) ? null : formatLink(request.url, formatDate(nextDate)),
     };
 
-    let items = [];
+    let hours = [];
 
     try {
-        items = await db.getScrobbles(user, queryDate)
+        const scrobbles = await db.getScrobbles(user, queryDate)
+        if (scrobbles.length !== 0) {
+            hours = createDiary(scrobbles);
+        }
     } catch (err) {
         // Internally within getScrobbles no user was found and an error was thrown
         // Really the below should happen within getScrobbles and then app specific
@@ -43,12 +47,14 @@ async function diary(request, h) {
         }
     }
 
-    return {
+    return h.view('diary', {
+        // TODO: bowie
+        hasBowie: false,
         user,
         date: formatDate(queryDate),
-        items,
+        hours,
         links,
-    };
+    });
 }
 
 module.exports = {

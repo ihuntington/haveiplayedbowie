@@ -3,6 +3,6 @@
 const Handlebars = require('handlebars');
 const format = require('date-fns/format');
 
-Handlebars.registerHelper('calendar-date', function (timestamp) {
-    return format(timestamp, 'iiii, do LLLL yyyy');
+Handlebars.registerHelper('calendar-date', function (date) {
+    return format(new Date(date), 'iiii, do LLLL yyyy');
 });
