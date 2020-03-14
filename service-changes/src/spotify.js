@@ -55,6 +55,11 @@ class Spotify {
 
                     return next();
                 }
+
+                return {
+                    token: this.token,
+                    refreshToken: this.refreshToken,
+                };
             });
     }
 
@@ -85,11 +90,10 @@ class Spotify {
             }))
             .catch((err) => {
                 if (err.statusCode === 401 && this.retryCount === 0) {
-                    console.log('Spotify access token expired');
                     return this.refreshAccessToken(() => this.recentlyPlayed());
                 }
 
-                throw new Error('The access token has expired');
+                throw new Error('Unable to fetch recently played tracks');
             });
     }
 }
