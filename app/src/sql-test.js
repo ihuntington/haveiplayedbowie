@@ -14,6 +14,7 @@ module.exports = {
         add: sql('users/add.sql'),
         find: sql('users/find.sql'),
         findByEmail: sql('users/find-by-email.sql'),
+        checkUsername: sql('users/check-username.sql'),
     },
     scrobbles: {
         findByUserAndDate: sql('scrobbles/find-by-user-and-date.sql'),
