@@ -227,6 +227,47 @@ h3 span {
     display: none;
 }
 
+.form-container {
+    margin: 0 auto;
+    max-width: 57.5rem;
+}
+
+.form-actions {
+    padding: 1.5rem 0 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    padding-bottom: .5rem;
+}
+
+.form-input {
+    box-sizing: border-box;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    padding: .5rem;
+    width: 100%;
+}
+
+.form-error {
+    padding-top: .5rem;
+}
+
+.form-error p {
+    margin: 0;
+}
+
+.form-button {
+    background: #070707;
+    border: 0;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.5;
+    padding: .5rem 1rem;
+}
 
 @media (min-width: 32rem) {
     .columns-2 th,
