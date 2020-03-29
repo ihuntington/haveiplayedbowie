@@ -6,6 +6,17 @@
     "configurations": [
         {
             "type": "node",
+            "request": "attach",
+            "name": "App: Nodemon",
+            "processId": "${command:PickProcess}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "protocol": "inspector"
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Changes Service",
             "program": "${workspaceFolder}/service-changes/src/index.js",
