@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "env-cmd -f .env jest",
     "debug": "env-cmd -f .env nodemon --inspect src/index.js 8080 --watch src --ext js,sql"
   },
   "keywords": [],
@@ -26,6 +26,7 @@
   "devDependencies": {
     "env-cmd": "^10.1.0",
     "eslint": "^6.8.0",
+    "jest": "^25.2.3",
     "nodemon": "^2.0.2"
   }
 }
