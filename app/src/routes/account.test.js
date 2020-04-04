@@ -126,10 +126,9 @@ describe('postUsername', () => {
 
                 expect(spyView).toHaveBeenCalledWith('account/username', {
                     hasNav: false,
-                    form: {
-                        username: {
-                            error: true,
-                        },
+                    hasError: true,
+                    errors: {
+                        username: 'unavailable',
                     },
                 });
             });

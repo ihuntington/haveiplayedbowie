@@ -5,32 +5,43 @@ const pgp = require('pg-promise')();
 const sql = require('./sql');
 const sqlTest = require('./sql-test');
 
-const config = {
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
-    database: process.env.SQL_DATABASE,
-  };
-
-if (
-    process.env.INSTANCE_CONNECTION_NAME &&
-    process.env.NODE_ENV === 'production'
-) {
-    config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
-} else {
-    config.host = 'localhost';
-    config.port = 5432;
-}
-
-const client = pgp(config);
-
-client.connect();
-
 const transformTotal = (item) => ({
     ...item,
     total: parseInt(item.total, 10),
 });
 
+const config = {
+    user: process.env.SQL_USER,
+    password: process.env.SQL_PASSWORD,
+    database: process.env.SQL_DATABASE,
+};
+
+let client;
+
+const connect = () => {
+    if (
+        process.env.INSTANCE_CONNECTION_NAME &&
+        process.env.NODE_ENV === 'production'
+    ) {
+        config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
+    } else {
+        config.host = 'localhost';
+        config.port = 5432;
+    }
+
+    if (client) {
+        return client;
+    }
+
+    client = pgp(config);
+
+    client.connect();
+
+    return client;
+};
+
 module.exports = {
+    connect,
     getArtistById: (id) => client.one(sql.getArtistById, { id }),
     // getArtistScrobblesByDateRange: (artist, from, to) => client.manyOrNone(sql.getArtistScrobblesByDateRange, { artist, from , to }),
     getArtistScrobblesByDateRange: (id, from, to) => {

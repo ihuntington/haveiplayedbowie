@@ -12,8 +12,6 @@ function getUsername(request, h) {
 
     return h.view('account/username', {
         hasNav: false,
-        hasError: false,
-        errors: {},
     });
 }
 

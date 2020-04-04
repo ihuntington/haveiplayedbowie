@@ -17,6 +17,9 @@ const db = require('./db');
 let server = null;
 
 const setup = async () => {
+    // Connect to Postgres
+    db.connect();
+
     server = Hapi.server({
         port: process.env.PORT || 8080,
         host: '0.0.0.0',
