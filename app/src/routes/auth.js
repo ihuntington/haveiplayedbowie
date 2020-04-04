@@ -29,6 +29,10 @@ async function spotifyAuth(request, h) {
 
         request.cookieAuth.set({ id: user.id });
 
+        if (!user.username) {
+            return h.redirect('/account/username');
+        }
+
         return h.redirect('/');
     } catch (err) {
         console.log(err);

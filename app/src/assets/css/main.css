@@ -236,6 +236,11 @@ h3 span {
     padding: 1.5rem 0 0;
 }
 
+.form-field--error {
+    border-left: 3px solid red;
+    padding-left: 1rem;
+}
+
 .form-label {
     display: block;
     font-size: 1.25rem;
@@ -245,17 +250,43 @@ h3 span {
 
 .form-input {
     box-sizing: border-box;
+    border: 3px solid #333;
     font-size: 1.25rem;
     line-height: 1.5;
     padding: .5rem;
     width: 100%;
 }
 
-.form-error {
-    padding-top: .5rem;
+.form-input:focus {
+    outline: 3px solid orange;
 }
 
-.form-error p {
+.form-input:invalid {
+    /* outline: 3px solid orange; */
+    outline: 0;
+}
+
+.form-input:valid {
+    outline: 0;
+}
+
+.form-field__message {
+    padding: 0 0 .5rem;
+}
+
+.form-field__message p {
+    line-height: 1.5;
+    margin: 0;
+}
+
+.form-error-message {
+    color: red;
+    font-weight: bold;
+    padding: .5rem 0;
+}
+
+.form-error-message p {
+    line-height: 1.5;
     margin: 0;
 }
 

@@ -1,14 +1,18 @@
 <div>
     <p>To start using your account you need to add a username</p>
     <div class="form-container">
-        <form method="POST" action="/temp">
-            <input type="hidden" name="uid" value="123" />
-            <div class="form-field">
+        <form method="POST" action="/account/username">
+            <div class="form-field {{#if hasError}}form-field--error{{/if}}">
                 <label class="form-label" for="username">Username</label>
-                <input class="form-input" type="text" name="username" id="username" required minlength="2" maxlength="50" />
-                <div class="form-error">
-                    <p>The username is not available. You will need to think of another one.</p>
+                <div class="form-field__message">
+                    <p>Your username should be at least two characters long</p>
                 </div>
+                {{#if hasError}}
+                <div class="form-error-message">
+                    {{#if (eq errors.username "unavailable")}}<p>The username is not available. You will need to think of another one.</p>{{/if}}
+                </div>
+                {{/if}}
+                <input class="form-input {{#if hasError}}form-input--error{{/if}}" type="text" name="username" id="username" required minlength="2" maxlength="50" />
             </div>
             <div class="form-actions">
                 <button class="form-button" type="submit">Save and continue</button>

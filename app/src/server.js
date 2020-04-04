@@ -171,6 +171,35 @@ const setup = async () => {
 
     server.route({
         method: 'GET',
+        path: '/account/username',
+        options: {
+            auth: {
+                strategy: 'session',
+                mode: 'required',
+            },
+            handler: routes.account.getUsername,
+        },
+    });
+
+    server.route({
+        method: 'POST',
+        path: '/account/username',
+        options: {
+            auth: {
+                strategy: 'session',
+                mode: 'required',
+            },
+            handler: routes.account.postUsername,
+            validate: {
+                payload: Joi.object({
+                    username: Joi.string().min(2).max(50),
+                }),
+            },
+        },
+    });
+
+    server.route({
+        method: 'GET',
         path: '/about',
         handler: (request, h) => {
             return h.view('about');
