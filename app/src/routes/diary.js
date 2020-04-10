@@ -19,17 +19,17 @@ function getHourlyIntervals(dateLeft, dateRight) {
         throw new Error('Date 1 must be a time before Date 2');
     }
 
-    const start = new Date(dateLeft).setMinutes(0);
-    const end = new Date(dateRight).setMinutes(0); // + MILLISECONDS_IN_HOUR;
-    const dates = [];
-    let curr = new Date(start).getTime();
+    const start = new Date(dateLeft).setMinutes(0, 0);
+    const end = new Date(dateRight).setMinutes(0, 0) + MILLISECONDS_IN_HOUR;
+    const range = [];
+    let current = start;
 
-    while (curr <= end) {
-        dates.push(new Date(curr));
-        curr += MILLISECONDS_IN_HOUR;
+    while (current <= end) {
+        range.push(new Date(current));
+        current += MILLISECONDS_IN_HOUR;
     }
 
-    return dates;
+    return range;
 }
 
 function getDuration(ms) {
@@ -108,6 +108,7 @@ async function tracks(request, h) {
             date: isoDate,
             hasBowie: false,
             items: [],
+            // TODO: remove fixed year and take the current
             previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
             next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
         });
