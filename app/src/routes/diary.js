@@ -44,32 +44,38 @@ function getDuration(ms) {
     };
 }
 
-function getTrackTimings(track) {
-    let duration = null;
-    let endTime = null;
-    let startTime = track.played_at.getTime();
-    let status = 'INCOMPLETE';
-    let endsInNextHour = false;
+/**
+ * @typedef {Object} Timings
+ * @property {number} duration
+ *  The duration in milliseconds
+ * @property {number} endTime
+ *  The end time in milliseconds
+ * @property {number} startTime
+ *  The start time in milliseconds
+ * @property {boolean} endsInNextHour
+ *  Ends in the hour after the start time
+ */
 
-    if (track.duration_ms) {
-        duration = getDuration(track.duration_ms);
-        endTime = startTime + track.duration_ms;
-        status = 'COMPLETE';
-        endsInNextHour = getHours(startTime) !== getHours(endTime);
-    } else {
-        // TODO: if data is missing then for the sake of UI set the duration
-        // as 3 minutes. The UI can denote that data is missing.
-        duration = getDuration(3 * 60000);
-        endTime = startTime + 3 * 60000;
-        endsInNextHour = getHours(startTime) !== getHours(endTime);
-    }
+/**
+ * @function
+ * @param {date} playedAt
+ *  When the track was played
+ * @param {*} ms
+ *  Track duration in milliseconds
+ * @returns {Timings}
+ *  The timings of the track
+ */
+function getTrackTimings(playedAt, ms = 3 * 60000) {
+    let duration = getDuration(ms);
+    let startTime = playedAt.getTime();
+    let endTime = startTime + 3 * 60000;
+    let endsInNextHour = getHours(startTime) !== getHours(endTime);
 
     return {
+        duration,
         startTime,
         endTime,
         endsInNextHour,
-        duration,
-        status,
     };
 }
 
@@ -95,6 +101,40 @@ function calculatePosY(minutes) {
     return tens + ones;
 }
 
+function addTrackTimings(track) {
+    return {
+        ...track,
+        ...getTrackTimings(track.played_at, track.duration_ms),
+    }
+}
+
+function calculateTrackHeight(track, index, arr) {
+    const ONE_MINUTE = 60000;
+    const roundedDuration = Math.round((track.duration.ms / 1000) / 60);
+    let skipped = false;
+    // The minimum track height is 3 minutes
+    let trackHeight = Math.max(3, roundedDuration);
+
+    if (index + 1 !== arr.length) {
+        const nextTrack = arr[index + 1];
+        const difference = nextTrack.startTime - track.endTime;
+
+        if (track.startTime === nextTrack.startTime) {
+            skipped = true;
+        }
+
+        if (difference > 0 && difference <= ONE_MINUTE) {
+            trackHeight = Math.max(3, differenceInMinutes(nextTrack.startTime, track.startTime));
+        }
+    }
+
+    return {
+        ...track,
+        trackHeight,
+        skipped,
+    };
+}
+
 async function tracks(request, h) {
     const formatDate = (date) => formatISO(date, { representation: 'date' });
     const formatQuery = (date) => `${request.path}?date=${formatDate(date)}`;
@@ -115,75 +155,35 @@ async function tracks(request, h) {
         });
     }
 
-    const tracksWithTimes = response.map((track) => ({
-        ...track,
-        ...getTrackTimings(track),
-    }))
     const hasBowie = response.filter(filterByBowie);
     const firstDate = head(response).played_at;
     const lastDate = last(response).played_at;
     const intervals = getHourlyIntervals(firstDate, lastDate);
-    const timeRange = intervals.map((time) => ({ time, items: [] }));
+    const tracksByHour = intervals.map((timestamp) => ({ timestamp, tracks: [] }));
+    const tracksWithTimes = response.map(addTrackTimings).map(calculateTrackHeight);
 
-    const events = [];
-    let count = 0;
+    for (const track of tracksWithTimes) {
+        const targetHour = tracksByHour.findIndex(({ timestamp }) => {
+            return timestamp.getDate() === track.played_at.getDate() && timestamp.getHours() === track.played_at.getHours();
+        });
 
-    while (count < tracksWithTimes.length) {
-        const track = tracksWithTimes[count];
-        const roundedTrackDuration = Math.round((track.duration.ms / 1000) / 60);
-        let skipped = false;
-        // TODO: if trackHeight cannot be less than 3 -- use 3 * 20 as minimum for ui
-        let trackHeight = Math.max(3, roundedTrackDuration);
-
-        if (count + 1 !== tracksWithTimes.length) {
-            const nextTrack = tracksWithTimes[count + 1];
-
-            if (track.startTime === nextTrack.startTime) {
-                skipped = true;
-            }
-
-            // TODO: No longer need the status check as a track is presumed
-            // to be at least 3 minutes long by this point. See above.
-            if (nextTrack.status === 'COMPLETE') {
-                const differenceBetweenTracks = nextTrack.startTime - track.endTime;
-
-                if (differenceBetweenTracks > 0 && differenceBetweenTracks <= 60000) {
-                    trackHeight = Math.max(3, differenceInMinutes(nextTrack.startTime, track.startTime));
-                }
-            }
+        if (targetHour) {
+            tracksByHour[targetHour].tracks.push({ ...track });
         }
-
-        events.push({
-            ...track,
-            trackHeight,
-            skipped,
-        });
-
-        count += 1;
     }
 
-    for (const event of events) {
-        const eventDate = event.played_at.getDate();
-        const eventHour = event.played_at.getHours();
-        const matchedHour = timeRange.findIndex((item) => {
-            return item.time.getDate() === eventDate && item.time.getHours() === eventHour;
-        });
-
-        timeRange[matchedHour].items.push({ ...event })
-    }
-
-    const tr = timeRange.map(({ time, items }, rangeIndex, rangeArr) => {
+    const tr = tracksByHour.map(({ timestamp, tracks }, rangeIndex, rangeArr) => {
         let hourHeight = 24 * 6;
 
-        const tracks = items.map((track, tracksIndex, tracksArr) => {
+        const items = tracks.map((track, tracksIndex, tracksArr) => {
             let posY = 0;
             let previousTrack;
 
             if (tracksIndex === 0 && rangeIndex > 0) {
                 const previousHour = rangeArr[rangeIndex - 1];
 
-                if (previousHour.items.length) {
-                    previousTrack = last(previousHour.items);
+                if (previousHour.tracks.length) {
+                    previousTrack = last(previousHour.tracks);
                 }
             } else {
                 previousTrack = tracksArr[tracksIndex - 1];
@@ -192,7 +192,7 @@ async function tracks(request, h) {
             if (tracksIndex === 0) {
                 if (previousTrack && previousTrack.endsInNextHour) {
                     const roundedEndTime = previousTrack.startTime + (previousTrack.trackHeight * 60000);
-                    const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, time);
+                    const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, timestamp);
                     const diff = differenceInMinutes(track.startTime, roundedEndTime);
                     posY = (previousTrackMinutesInHour * 24) + calculatePosY(diff);
                     hourHeight = posY + (track.trackHeight * 24);
@@ -203,10 +203,7 @@ async function tracks(request, h) {
             } else {
                 let offset = 0;
 
-                if (
-                    previousTrack.status === 'COMPLETE'
-                    && track.startTime - previousTrack.endTime > 60000
-                ) {
+                if (track.startTime - previousTrack.endTime > 60000) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
                     // offset = calculatePosY(diff);
                     offset = diff * (24 / 10);
@@ -220,7 +217,7 @@ async function tracks(request, h) {
             // adjust the height of the hour
             if (tracksIndex + 1 === tracksArr.length && !track.endsInNextHour) {
                 const roundedEndTime = track.startTime + (track.trackHeight * 60000);
-                const diff = differenceInMinutes(addHours(time, 1), roundedEndTime);
+                const diff = differenceInMinutes(addHours(timestamp, 1), roundedEndTime);
                 hourHeight = hourHeight + (calculatePosY(diff));
             }
 
@@ -237,8 +234,8 @@ async function tracks(request, h) {
         });
 
         return {
-            time,
-            items: tracks,
+            time: timestamp,
+            items,
             hourHeight,
         };
     });
