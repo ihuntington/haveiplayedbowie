@@ -8,7 +8,7 @@ const formatISO = require('date-fns/formatISO');
 const getHours = require('date-fns/getHours');
 const getMinutes = require('date-fns/getMinutes');
 const parseISO = require('date-fns/parseISO');
-const { last } = require('ramda');
+const { head, last } = require('ramda');
 
 const db = require('../db');
 
@@ -16,20 +16,21 @@ function getHourlyIntervals(dateLeft, dateRight) {
     const MILLISECONDS_IN_HOUR = 3600000;
 
     if (dateLeft > dateRight) {
-        throw new Error('Date 1 must be a time before Date 2');
+        throw new Error('Date 1 must be a date before Date 2');
     }
 
-    const start = new Date(dateLeft).setMinutes(0, 0);
-    const end = new Date(dateRight).setMinutes(0, 0) + MILLISECONDS_IN_HOUR;
-    const range = [];
+    const start = dateLeft.setMinutes(0, 0, 0);
+    const end = dateRight.setMinutes(0, 0, 0);
+    const intervals = [];
+
     let current = start;
 
     while (current <= end) {
-        range.push(new Date(current));
+        intervals.push(new Date(current));
         current += MILLISECONDS_IN_HOUR;
     }
 
-    return range;
+    return intervals;
 }
 
 function getDuration(ms) {
@@ -119,9 +120,10 @@ async function tracks(request, h) {
         ...getTrackTimings(track),
     }))
     const hasBowie = response.filter(filterByBowie);
-    // const hours = getHourlyIntervals(isoDate, addDays(isoDate, 1));
-    const hours = getHourlyIntervals(response[0].played_at, last(response).played_at);
-    const timeRange = hours.map((time) => ({ time, items: [] }));
+    const firstDate = head(response).played_at;
+    const lastDate = last(response).played_at;
+    const intervals = getHourlyIntervals(firstDate, lastDate);
+    const timeRange = intervals.map((time) => ({ time, items: [] }));
 
     const events = [];
     let count = 0;
