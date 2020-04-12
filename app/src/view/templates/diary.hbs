@@ -20,13 +20,13 @@
         {{/if}}
     </ul>
 
-    {{#if hours}}
+    {{#if items}}
     <div class="container">
-        {{#each hours}}
+        {{#each items}}
         <div class="hour" style="height: {{this.hourHeight}}px;">
             <time class="hour-time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="event" style="height: calc({{this.roundedDuration}} * var(--card-unit-height)); top: {{this.posY}}px;">
+            <div class="event" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
                 <div class="event-time">
                     <time datetime="{{date-time this.played_at}}">{{time this.played_at}}</time>
                 </div>
@@ -40,8 +40,8 @@
                     {{/if}}
                     {{#if this.skipped}}<span class="event-skipped">Skipped</span>{{/if}}
                 </div>
-                {{#if this.duration_ms}}
-                <time class="event-duration">{{duration this.duration_ms}}</time>
+                {{#if this.track_duration}}
+                <time class="event-duration">{{duration this.track_duration}}</time>
                 {{/if}}
             </div>
             {{/each}}
@@ -49,7 +49,7 @@
         {{/each}}
     </div>
     {{/if}}
-    {{#unless hours}}
+    {{#unless items}}
     <p>No tracks were played today.</p>
     {{/unless}}
 </div>

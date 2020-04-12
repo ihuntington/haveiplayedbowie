@@ -25,12 +25,12 @@ async function diary(request, h) {
         next: isToday(queryDate) ? null : formatLink(request.url, formatDate(nextDate)),
     };
 
-    let hours = [];
+    let items = [];
 
     try {
         const scrobbles = await db.getScrobbles(user, queryDate)
         if (scrobbles.length !== 0) {
-            hours = createDiary(scrobbles);
+            items = createDiary(scrobbles);
         }
     } catch (err) {
         // Internally within getScrobbles no user was found and an error was thrown
@@ -52,7 +52,7 @@ async function diary(request, h) {
         hasBowie: false,
         user,
         date: formatDate(queryDate),
-        hours,
+        items,
         links,
     });
 }
