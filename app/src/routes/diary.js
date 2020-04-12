@@ -138,7 +138,7 @@ function calculateTrackHeight(track, index, arr) {
 async function tracks(request, h) {
     const formatDate = (date) => formatISO(date, { representation: 'date' });
     const formatQuery = (date) => `${request.path}?date=${formatDate(date)}`;
-    const isoDate = parseISO(request.query.date || '2019-12-31');
+    const isoDate = parseISO(request.query.date || formatDate(Date.now()));
     const previousDate = addDays(isoDate, -1);
     const nextDate = addDays(isoDate, 1);
 
@@ -149,9 +149,8 @@ async function tracks(request, h) {
             date: isoDate,
             hasBowie: false,
             items: [],
-            // TODO: remove fixed year and take the current
-            previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
-            next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
+            previous: previousDate.getFullYear() > 2018 ? formatQuery(previousDate) : null,
+            next: nextDate.getFullYear() > 2018 ? formatQuery(nextDate) : null,
         });
     }
 
@@ -244,8 +243,8 @@ async function tracks(request, h) {
         date: isoDate,
         hasBowie,
         items: tr,
-        previous: previousDate.getFullYear() === 2019 ? formatQuery(previousDate) : null,
-        next: nextDate.getFullYear() === 2019 ? formatQuery(nextDate) : null,
+        previous: previousDate.getFullYear() > 2018 ? formatQuery(previousDate) : null,
+        next: nextDate.getFullYear() > 2018 ? formatQuery(nextDate) : null,
     });
 }
 
