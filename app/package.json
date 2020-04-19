@@ -20,6 +20,7 @@
     "@hapi/vision": "^5.5.4",
     "date-fns": "^2.9.0",
     "handlebars": "^4.7.0",
+    "luxon": "^1.23.0",
     "pg-promise": "^10.3.2",
     "ramda": "^0.26.1"
   },

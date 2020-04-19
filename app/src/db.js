@@ -4,6 +4,7 @@ const process = require('process');
 const pgp = require('pg-promise')();
 const sql = require('./sql');
 const sqlTest = require('./sql-test');
+const { DateTime } = require('luxon');
 
 const transformTotal = (item) => ({
     ...item,
@@ -39,6 +40,19 @@ const connect = () => {
 
     return client;
 };
+
+function toUTC(timestamp) {
+    return DateTime.fromObject({
+        year: timestamp.getFullYear(),
+        // In Luxon month is 1-index based
+        month: timestamp.getMonth() + 1,
+        day: timestamp.getDate(),
+        hour: timestamp.getHours(),
+        minute: timestamp.getMinutes(),
+        second: timestamp.getSeconds(),
+        zone: 'utc',
+    });
+}
 
 module.exports = {
     connect,
@@ -110,10 +124,15 @@ module.exports = {
     updateUsername: (uid, username) => client.none(sqlTest.users.updateUsername, { uid, username }),
     getScrobbles: (username, date) => {
         return client.task(task => {
-            return task.one('SELECT id FROM users WHERE username = $1', [username])
-                .then(({ id: uid }) => {
-                    return task.manyOrNone(sqlTest.scrobbles.findByUserAndDate, { uid, date })
+            return task.one('SELECT id AS uid FROM users WHERE username = $1', [username])
+                .then(({ uid }) => {
+                    return task.map(sqlTest.scrobbles.findByUserAndDate, { uid, date }, (row) => {
+                        return {
+                            ...row,
+                            played_at: toUTC(row.played_at).setZone('Europe/London').toJSDate(),
+                        };
+                    });
                 });
-        }).then(data => data);
+        });
     },
 };
