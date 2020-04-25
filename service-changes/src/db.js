@@ -31,15 +31,17 @@ const pgpInitOptions = {
         }
     },
     transact(e) {
-        if (e.ctx.finish) {
-            console.log('Transaction duration', e.ctx.duration);
-            if (e.ctx.success) {
-                console.log('Transaction success');
+        if (process.env.NODE_ENV === 'development') {
+            if (e.ctx.finish) {
+                console.log('Transaction duration', e.ctx.duration);
+                if (e.ctx.success) {
+                    console.log('Transaction success');
+                } else {
+                    console.log('Transaction failure');
+                }
             } else {
-                console.log('Transaction failure');
+                console.log('Transaction start time', e.ctx.start);
             }
-        } else {
-            console.log('Transaction start time', e.ctx.start);
         }
     }
 }
@@ -83,9 +85,14 @@ async function updateRecentlyPlayed(context, user_id) {
     return await context.none(sql.users.updateRecentlyPlayed, { user_id, now });
 }
 
+async function getUsersByRecentlyPlayed() {
+    const frequency = process.env.RECENTLY_PLAYED_FREQUENCY;
+    return await client.any(sql.users.readByRecentlyPlayed, { frequency });
+}
+
 module.exports = {
     getUsers: () => client.manyOrNone(sql.users.readAll),
-    getUsersByRecentlyPlayed: () => client.manyOrNone(sql.users.readByRecentlyPlayed),
+    getUsersByRecentlyPlayed,
     importTrack: (uid, item) => {
         return client.tx('import-recently-played', async (tx) => {
             // const artists = await tx.batch(item.artists.map((artist, index) => getInsertArtist(tx, artist.name, index)));
