@@ -129,6 +129,7 @@ module.exports = {
                     return task.map(sqlTest.scrobbles.findByUserAndDate, { uid, date }, (row) => {
                         return {
                             ...row,
+                            // TODO: only do this for 2020 onwards or not from last.fm
                             played_at: toUTC(row.played_at).setZone('Europe/London').toJSDate(),
                         };
                     });
