@@ -1,5 +1,1 @@
 cron:
-- description: "recently played tracks check"
-  url: /recently-played
-  schedule: every 1 mins
-  target: changes
