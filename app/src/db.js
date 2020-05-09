@@ -2,10 +2,9 @@
 
 const process = require('process');
 const pgp = require('pg-promise')();
-const sql = require('./sql');
 const sqlTest = require('./sql-test');
-const { DateTime } = require('luxon');
 
+// TODO: cast to number in query
 const transformTotal = (item) => ({
     ...item,
     total: parseInt(item.total, 10),
@@ -41,23 +40,8 @@ const connect = () => {
     return client;
 };
 
-function toUTC(timestamp) {
-    return DateTime.fromObject({
-        year: timestamp.getFullYear(),
-        // In Luxon month is 1-index based
-        month: timestamp.getMonth() + 1,
-        day: timestamp.getDate(),
-        hour: timestamp.getHours(),
-        minute: timestamp.getMinutes(),
-        second: timestamp.getSeconds(),
-        zone: 'utc',
-    });
-}
-
 module.exports = {
     connect,
-    getArtistById: (id) => client.one(sql.getArtistById, { id }),
-    // getArtistScrobblesByDateRange: (artist, from, to) => client.manyOrNone(sql.getArtistScrobblesByDateRange, { artist, from , to }),
     getArtistScrobblesByDateRange: (id, from, to) => {
         const params = {
             id,
@@ -75,10 +59,10 @@ module.exports = {
                 to,
             };
 
-            return Promise.all([
-                task.one(sql.getArtistById, { id }),
+            return task.batch([
+                task.one(sqlTest.artists.getById, { id }),
                 task.map(sqlTest.artists.scrobblesByMonth, { ...params, year: from.getFullYear() }, transformTotal),
-                task.map(sql.getTopTracksByArtist, params, transformTotal),
+                task.map(sqlTest.scrobbles.getTopTracksByArtist, params, transformTotal),
             ])
             .then(([artist, chart, topTracks]) => ({
                 artist,
@@ -95,28 +79,25 @@ module.exports = {
                 to,
             };
             const paramsWithBowie = {
-                id: BOWIE_ARTIST_ID,
                 ...params,
+                id: BOWIE_ARTIST_ID,
             };
-            return Promise.all([
-                task.map(sql.getTopArtists, params, transformTotal),
-                task.map(sql.getTopTracks, params, transformTotal),
-                task.map(sql.getTopTracksByArtist, paramsWithBowie, transformTotal),
-                task.map(sql.getTotalTracksByArtist, paramsWithBowie, transformTotal)
+            return task.batch([
+                task.map(sqlTest.scrobbles.getTopArtists, params, transformTotal),
+                task.map(sqlTest.scrobbles.getTopTracks, params, transformTotal),
+                task.map(sqlTest.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
+                task.map(sqlTest.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
             ])
-            .then(([artists, tracks, bowieTracks, bowieTotal]) => {
-                return {
-                    artists,
-                    tracks,
-                    bowieTracks,
-                    bowieTotal,
-                };
-            });
+            .then(([artists, tracks, bowieTracks, bowieTotal]) => ({
+                artists,
+                tracks,
+                bowieTracks,
+                bowieTotal,
+            }));
         });
     },
-    getTopTracks: (from, to) => client.manyOrNone(sql.getTopTracks, { from, to }),
-    getTrack: (track) => client.one(sql.getTrack, [track]),
-    getTracksByDate: (date) => client.query(sql.getTracksByDate, [date]),
+    getTopTracks: (from, to) => client.manyOrNone(sqlTest.scrobbles.getTopTracks, { from, to }),
+    getTrack: (trackId) => client.one(sqlTest.scrobbles.getTrackById, { trackId }),
     checkUsername: (username) => client.oneOrNone(sqlTest.users.checkUsername, { username }),
     getUser: (id) => client.oneOrNone(sqlTest.users.find, { id }),
     getUserByEmail: (email) => client.oneOrNone(sqlTest.users.findByEmail, { email }),
@@ -126,13 +107,7 @@ module.exports = {
         return client.task(task => {
             return task.one('SELECT id AS uid FROM users WHERE username = $1', [username])
                 .then(({ uid }) => {
-                    return task.map(sqlTest.scrobbles.findByUserAndDate, { uid, date }, (row) => {
-                        return {
-                            ...row,
-                            // TODO: only do this for 2020 onwards or not from last.fm
-                            played_at: toUTC(row.played_at).setZone('Europe/London').toJSDate(),
-                        };
-                    });
+                    return task.any(sqlTest.scrobbles.findByUserAndDate, { uid, date });
                 });
         });
     },
