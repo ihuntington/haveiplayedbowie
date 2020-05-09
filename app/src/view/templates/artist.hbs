@@ -1,31 +1,35 @@
 <div>
     <h2>{{artist.name}}</h2>
     {{#if this.chart}}
-    <h3>Listening history by month for 2019</h3>
-    <table>
+    <h3>
+        <span>Listening history by month for 2019</span>
+    </h3>
+    <table class="chart-table columns-2">
         <thead>
             <tr>
                 <th>Month</th>
-                <th>Play count</th>
+                <th class="chart-table__count">Play count</th>
             </tr>
         </thead>
         <tbody>
             {{#each this.chart}}
             <tr>
                 <td>{{date-month-year datestamp}}</td>
-                <td>{{total}}</td>
+                <td class="chart-table__count">{{total}}</td>
             </tr>
             {{/each}}
         </tbody>
     </table>
     {{/if}}
-    <h2>Top tracks</h2>
+    <h3>
+        <span>Top tracks</span>
+    </h3>
     {{#if this.topTracks}}
-    <table>
+    <table class="chart-table columns-2">
         <thead>
             <tr>
                 <th>Track</th>
-                <th>Play count</th>
+                <th class="chart-table__count">Play count</th>
             </tr>
         </thead>
         <tbody>
@@ -34,7 +38,7 @@
                 <td>
                     <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
                 </td>
-                <td>
+                <td class="chart-table__count">
                     {{this.total}}
                 </td>
             </tr>
