@@ -2,7 +2,7 @@
 
 const process = require('process');
 const pgp = require('pg-promise')();
-const sqlTest = require('./sql-test');
+const sql = require('./sql');
 
 // TODO: cast to number in query
 const transformTotal = (item) => ({
@@ -49,7 +49,7 @@ module.exports = {
             to,
             year: from.getFullYear(),
         };
-        return client.manyOrNone(sqlTest.artists.scrobblesByMonth, params);
+        return client.manyOrNone(sql.artists.scrobblesByMonth, params);
     },
     getArtistSummary: (id, from, to) => {
         return client.task((task) => {
@@ -60,9 +60,9 @@ module.exports = {
             };
 
             return task.batch([
-                task.one(sqlTest.artists.getById, { id }),
-                task.map(sqlTest.artists.scrobblesByMonth, { ...params, year: from.getFullYear() }, transformTotal),
-                task.map(sqlTest.scrobbles.getTopTracksByArtist, params, transformTotal),
+                task.one(sql.artists.getById, { id }),
+                task.map(sql.artists.scrobblesByMonth, { ...params, year: from.getFullYear() }, transformTotal),
+                task.map(sql.scrobbles.getTopTracksByArtist, params, transformTotal),
             ])
             .then(([artist, chart, topTracks]) => ({
                 artist,
@@ -83,10 +83,10 @@ module.exports = {
                 id: BOWIE_ARTIST_ID,
             };
             return task.batch([
-                task.map(sqlTest.scrobbles.getTopArtists, params, transformTotal),
-                task.map(sqlTest.scrobbles.getTopTracks, params, transformTotal),
-                task.map(sqlTest.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
-                task.map(sqlTest.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
+                task.map(sql.scrobbles.getTopArtists, params, transformTotal),
+                task.map(sql.scrobbles.getTopTracks, params, transformTotal),
+                task.map(sql.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
+                task.map(sql.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
             ])
             .then(([artists, tracks, bowieTracks, bowieTotal]) => ({
                 artists,
@@ -96,18 +96,18 @@ module.exports = {
             }));
         });
     },
-    getTopTracks: (from, to) => client.manyOrNone(sqlTest.scrobbles.getTopTracks, { from, to }),
-    getTrack: (trackId) => client.one(sqlTest.scrobbles.getTrackById, { trackId }),
-    checkUsername: (username) => client.oneOrNone(sqlTest.users.checkUsername, { username }),
-    getUser: (id) => client.oneOrNone(sqlTest.users.find, { id }),
-    getUserByEmail: (email) => client.oneOrNone(sqlTest.users.findByEmail, { email }),
-    addUser: (user) => client.one(sqlTest.users.add, { ...user }),
-    updateUsername: (uid, username) => client.none(sqlTest.users.updateUsername, { uid, username }),
+    getTopTracks: (from, to) => client.manyOrNone(sql.scrobbles.getTopTracks, { from, to }),
+    getTrack: (trackId) => client.one(sql.scrobbles.getTrackById, { trackId }),
+    checkUsername: (username) => client.oneOrNone(sql.users.checkUsername, { username }),
+    getUser: (id) => client.oneOrNone(sql.users.find, { id }),
+    getUserByEmail: (email) => client.oneOrNone(sql.users.findByEmail, { email }),
+    addUser: (user) => client.one(sql.users.add, { ...user }),
+    updateUsername: (uid, username) => client.none(sql.users.updateUsername, { uid, username }),
     getScrobbles: (username, date) => {
         return client.task(task => {
             return task.one('SELECT id AS uid FROM users WHERE username = $1', [username])
                 .then(({ uid }) => {
-                    return task.any(sqlTest.scrobbles.findByUserAndDate, { uid, date });
+                    return task.any(sql.scrobbles.findByUserAndDate, { uid, date });
                 });
         });
     },
