@@ -47,14 +47,24 @@ async function diary(request, h) {
         }
     }
 
-    return h.view('diary', {
-        // TODO: bowie
+    const viewContext = {
+        // TODO: hasBowie?
         hasBowie: false,
         user,
         date: formatDate(queryDate),
         items,
         links,
-    });
+        auth: {
+            isAuthenticated: false,
+        }
+    }
+
+    if (request.auth.isAuthenticated) {
+        viewContext.auth.isAuthenticated = true;
+        viewContext.auth.username = request.auth.credentials.username;
+    }
+
+    return h.view('diary', viewContext);
 }
 
 module.exports = {

@@ -107,6 +107,10 @@ const setup = async () => {
         method: 'GET',
         path: '/users/{user}/diary',
         config: {
+            auth: {
+                strategy: 'session',
+                mode: 'optional',
+            },
             handler: routes.users.diary,
             validate: {
                 params: Joi.object({
@@ -220,8 +224,11 @@ const setup = async () => {
             handler: (request, h) => {
                 if (request.auth.isAuthenticated) {
                     return h.view('index', {
-                        isAuthenticated: true,
-                        name: request.auth.credentials.profile.displayName,
+                        auth: {
+                            isAuthenticated: true,
+                            name: request.auth.credentials.profile.displayName,
+                            username: request.auth.credentials.username,
+                        }
                     });
                 }
 
