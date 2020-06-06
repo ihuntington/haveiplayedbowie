@@ -18,6 +18,7 @@
     "@hapi/inert": "^5.2.2",
     "@hapi/joi": "^16.1.8",
     "@hapi/vision": "^5.5.4",
+    "@hapi/wreck": "^16.0.1",
     "date-fns": "^2.9.0",
     "handlebars": "^4.7.0",
     "luxon": "^1.23.0",

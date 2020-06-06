@@ -11,6 +11,7 @@ if (process.env.NODE_ENV === 'production') {
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
+const Wreck = require('@hapi/wreck');
 const routes = require('./routes');
 const db = require('./db');
 
@@ -210,6 +211,28 @@ const setup = async () => {
         path: '/about',
         handler: (request, h) => {
             return h.view('about');
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/test',
+        options: {
+            validate: {
+                query: Joi.object({
+                    username: Joi.string().required().min(2).max(50),
+                    date: Joi.date().required().iso().max('now'),
+                }),
+            },
+            handler: async (request, h) => {
+                const { username, date } = request.query;
+
+                const { payload } = await Wreck.get(`http://0.0.0.0:5000/scrobbles?username=${username}&date=${date}`, {
+                    json: true,
+                });
+
+                return payload;
+            },
         }
     });
 
