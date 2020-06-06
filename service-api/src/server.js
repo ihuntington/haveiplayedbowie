@@ -47,20 +47,20 @@ function setup() {
         options: {
             handler: async (request, h) => {
                 const { items } = request.payload;
-                const results = [];
+                const scrobbles = [];
 
                 for (const item of items) {
                     try {
-                        const scrobble = await db.insertScrobbleFromSpotify('7ecf533d-0f4d-4def-86d6-c58d3258870f', item);
-                        results.push(scrobble.id)
+                        const result = await db.insertScrobbleFromSpotify('7ecf533d-0f4d-4def-86d6-c58d3258870f', item);
+                        scrobbles.push(result.id)
                     } catch (e) {
                         console.log(e);
-                        results.push(null);
+                        scrobbles.push(null);
                     }
 
                 }
 
-                return { results };
+                return { scrobbles };
             }
         }
     })
