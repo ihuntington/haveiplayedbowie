@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^18.4.1",
+    "@hapi/joi": "^16.1.8",
     "pg-promise": "^10.3.5",
     "rambda": "^5.4.0"
   },
