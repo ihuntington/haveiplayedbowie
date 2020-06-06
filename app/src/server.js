@@ -12,6 +12,7 @@ const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
 const Wreck = require('@hapi/wreck');
+const formatISO = require('date-fns/formatISO');
 const routes = require('./routes');
 const db = require('./db');
 
@@ -227,7 +228,7 @@ const setup = async () => {
             handler: async (request, h) => {
                 const { username, date } = request.query;
 
-                const { payload } = await Wreck.get(`http://0.0.0.0:5000/scrobbles?username=${username}&date=${date}`, {
+                const { payload } = await Wreck.get(`http://0.0.0.0:5000/scrobbles?username=${username}&date=${formatISO(date, { representation: 'date' })}`, {
                     json: true,
                 });
 
