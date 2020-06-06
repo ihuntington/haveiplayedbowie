@@ -19,11 +19,15 @@ module.exports = {
     },
     scrobbles: {
         find: sql('scrobbles/find-existing-scrobble.sql'),
+        findByUserAndDate: sql('scrobbles/find-by-user-and-date.sql'),
         insert: sql('scrobbles/insert.sql'),
     },
     tracks: {
         findByName: sql('tracks/find-by-name.sql'),
         findBySpotify: sql('tracks/find-by-spotify.sql'),
         insert: sql('tracks/insert.sql'),
+    },
+    users: {
+        findByUsername: sql('users/select-by-username.sql'),
     },
 };

@@ -122,3 +122,20 @@ exports.insertScrobbleFromSpotify = (uid, item) => {
         return scrobble;
     });
 };
+
+exports.getScrobbles = (username, date) => {
+    return client.task(async (task) => {
+        const { id: uid } = await task.one(sql.users.findByUsername, { username });
+        const scrobbles = await task.any(sql.scrobbles.findByUserAndDate, { uid, date });
+        const artists = await task.batch(
+            scrobbles.map(
+                ({ track_id }) => task.any(sql.artistsTracks.selectArtistsByTrack, { track_id })
+            )
+        );
+
+        return scrobbles.map((scrobble, index) => ({
+            ...scrobble,
+            artists: artists[index],
+        }));
+    });
+};
