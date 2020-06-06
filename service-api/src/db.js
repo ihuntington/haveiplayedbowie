@@ -81,7 +81,7 @@ exports.insertScrobbleFromSpotify = (uid, item) => {
             .map(([artists, track]) => ({ ...track, artists }));
 
         const match = storedArtistsTracks.find(({ artists }) => {
-            const names = artists.map(({ artist_name }) => artist_name);
+            const names = artists.map(({ name }) => name);
             return equals(requestArtistNames, names);
         });
 
@@ -134,7 +134,14 @@ exports.getScrobbles = (username, date) => {
         );
 
         return scrobbles.map((scrobble, index) => ({
-            ...scrobble,
+            id: scrobble.id,
+            played_at: scrobble.played_at,
+            track: {
+                id: scrobble.track_id,
+                name: scrobble.track_name,
+                duration: scrobble.track_duration,
+                spotify_id: scrobble.spotify_id,
+            },
             artists: artists[index],
         }));
     });
