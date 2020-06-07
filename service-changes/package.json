@@ -4,7 +4,6 @@
   "description": "HIPBT Ch-ch-changes service to request recently played tracks",
   "main": "src/index.js",
   "dependencies": {
-    "@google-cloud/debug-agent": "^4.2.2",
     "@hapi/boom": "^8.0.1",
     "@hapi/hapi": "^18.4.0",
     "@hapi/wreck": "^16.0.1",

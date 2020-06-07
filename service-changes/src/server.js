@@ -1,13 +1,6 @@
 'use strict';
 
 const process = require('process');
-
-if (process.env.NODE_ENV === 'production') {
-    require('@google-cloud/debug-agent').start({
-        allowExpressions: true,
-    });
-}
-
 const Hapi = require('@hapi/hapi');
 const Wreck = require('@hapi/wreck');
 const Spotify = require('./spotify');
