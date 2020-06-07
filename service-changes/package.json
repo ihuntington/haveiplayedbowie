@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "dependencies": {
     "@google-cloud/debug-agent": "^4.2.2",
+    "@hapi/boom": "^8.0.1",
     "@hapi/hapi": "^18.4.0",
+    "@hapi/wreck": "^16.0.1",
     "luxon": "^1.23.0",
     "pg-promise": "^10.4.2",
     "request": "^2.88.0",
@@ -19,7 +21,7 @@
     "nodemon": "^2.0.3"
   },
   "scripts": {
-    "debug": "env-cmd -f .env nodemon --inspect src/index.js 3010 --watch src --ext js,sql",
+    "debug": "env-cmd -f .env nodemon --inspect src/index.js --watch src --ext js,sql",
     "start": "node src/index.js",
     "test": "jest"
   },
