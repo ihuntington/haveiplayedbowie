@@ -28,6 +28,9 @@ module.exports = {
         insert: sql('tracks/insert.sql'),
     },
     users: {
+        readAllByRecentlyPlayed: sql('users/select-by-recently-played.sql'),
         findByUsername: sql('users/select-by-username.sql'),
+        updateTokens: sql('users/update-user-tokens.sql'),
+        updateRecentlyPlayed: sql('users/update-recently-played.sql'),
     },
 };

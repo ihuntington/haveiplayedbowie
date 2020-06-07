@@ -146,3 +146,15 @@ exports.getScrobbles = (username, date) => {
         }));
     });
 };
+
+exports.getUsersByRecentlyPlayed = async () => {
+    return client.any(sql.users.readAllByRecentlyPlayed, { frequency: '6 minutes '});
+};
+
+exports.updateUserTokens = (uid, tokens) => {
+    return client.none(sql.users.updateTokens, { uid, ...tokens });
+};
+
+exports.updateRecentlyPlayed = (uid) => {
+    return client.none(sql.users.updateRecentlyPlayed, { uid });
+};
