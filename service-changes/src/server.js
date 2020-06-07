@@ -9,7 +9,7 @@ async function getRecentlyPlayed(user) {
     const spotify = new Spotify(user.token, user.refresh_token);
     const after = user.recently_played_at && new Date(user.recently_played_at).getTime() || null;
     const { tokens, data } = await spotify.recentlyPlayed(after);
-    return Promise.resolve({ tokens, tracks: data });
+    return Promise.resolve({ tokens, tracks: data.items });
 }
 
 async function* makeRecentlyPlayedGenerator(users) {
@@ -22,7 +22,7 @@ async function* makeRecentlyPlayedGenerator(users) {
                     token: tokens.token,
                     refresh_token: tokens.refreshToken,
                 },
-                tracks: tracks.items,
+                tracks,
             };
         } catch (e) {
             console.error(e);
@@ -74,7 +74,7 @@ server.route({
 
             try {
                 const response = await Wreck.post('http://localhost:5000/scrobbles', {
-                    payload: { user: user.id, items: tracks.items },
+                    payload: { user: user.id, items: tracks },
                     json: true,
                 });
 
