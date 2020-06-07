@@ -7,6 +7,17 @@
         {
             "type": "node",
             "request": "attach",
+            "name": "Attach to API",
+            "processId": "${command:PickProcess}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "protocol": "inspector"
+        },
+        {
+            "type": "node",
+            "request": "attach",
             "name": "App: Nodemon",
             "processId": "${command:PickProcess}",
             "skipFiles": [
