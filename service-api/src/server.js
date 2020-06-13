@@ -120,6 +120,14 @@ function setup() {
         }
     });
 
+    server.route({
+        method: 'GET',
+        path: '/_health',
+        handler: () => {
+            return 'ok';
+        },
+    });
+
     return server;
 }
 
