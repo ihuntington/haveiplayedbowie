@@ -122,6 +122,41 @@ function setup() {
 
     server.route({
         method: 'GET',
+        path: '/artists/{artist}',
+        options: {
+            handler: async (request, h) => {
+                const { artist } = request.params;
+                try {
+                    const summary = await db.getArtistSummary({ id: artist, year: 2020 });
+                    return summary;
+                } catch (err) {
+                    console.error(err);
+                    return h.response().code(500);
+                }
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/tracks/{track}',
+        options: {
+            handler: async (request, h) => {
+                // TODO: change to find track by name
+                // handle could not find track and server error
+                try {
+                    const track = await db.findTrack(request.params.track);
+                    return track;
+                } catch (err) {
+                    console.log(err);
+                    return h.response().code(404);
+                }
+            }
+        }
+    })
+
+    server.route({
+        method: 'GET',
         path: '/_health',
         handler: () => {
             return 'ok';

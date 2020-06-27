@@ -10,6 +10,7 @@ function sql(file) {
 
 module.exports = {
     artists: {
+        find: sql('artists/find.sql'),
         findByName: sql('artists/find-by-name.sql'),
         findBySpotify: sql('artists/find-by-spotify.sql'),
         insert: sql('artists/insert.sql'),
@@ -19,10 +20,12 @@ module.exports = {
     },
     scrobbles: {
         find: sql('scrobbles/find-existing-scrobble.sql'),
+        findByArtistAndYear: sql('scrobbles/find-by-artist-and-year.sql'),
         findByUserAndDate: sql('scrobbles/find-by-user-and-date.sql'),
         insert: sql('scrobbles/insert.sql'),
     },
     tracks: {
+        find: sql('tracks/find.sql'),
         findByName: sql('tracks/find-by-name.sql'),
         findBySpotify: sql('tracks/find-by-spotify.sql'),
         insert: sql('tracks/insert.sql'),

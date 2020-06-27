@@ -158,3 +158,54 @@ exports.updateUserTokens = (uid, tokens) => {
 exports.updateRecentlyPlayed = (uid) => {
     return client.none(sql.users.updateRecentlyPlayed, { uid });
 };
+
+exports.findTrack = (id) => {
+    return client.task((task) => {
+        return task.batch([
+            task.one(sql.tracks.find, { id }),
+            task.any(sql.artistsTracks.selectArtistsByTrack, { track_id: id })
+        ]).then(([track, artists]) => ({
+            ...track,
+            artists,
+        }));
+    });
+};
+
+exports.getArtistSummary = ({ id, year }) => {
+    return client.task(async (task) => {
+        const query = {
+            from: new Date(year, 0, 1),
+            to: new Date(year , 11, 31),
+            year,
+        };
+
+        // TODO: cast number in SQL
+        const transformTotal = (item) => ({
+            ...item,
+            total: parseInt(item.total, 10),
+        });
+
+        try {
+            const artist = await task.one(sql.artists.find, { id });
+            const [chart] = await task.batch([
+                task.map(sql.scrobbles.findByArtistAndYear, { id: artist.id, ...query }, transformTotal),
+                // task.map(sql.scrobbles.getTopTracksByArtist, { id: artist.id, ...query }, transformTotal),
+            ]);
+
+            return {
+                artist,
+                chart,
+                // tracks,
+            };
+        } catch (e) {
+            console.log('getArtistSummary: could not find artist', id);
+            console.error(e);
+
+            return {
+                artist: null,
+                chart: null,
+                tracks: [],
+            };
+        }
+    });
+}
