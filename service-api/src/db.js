@@ -64,7 +64,6 @@ exports.insertScrobbleFromSpotify = (uid, item) => {
     return client.tx('insert-scrobble-from-spotify', async (tx) => {
         let track;
         let artists;
-        let artistsTracks;
         let scrobble;
 
         const requestArtistNames = item.track.artists.map(({ name }) => name);
@@ -110,7 +109,7 @@ exports.insertScrobbleFromSpotify = (uid, item) => {
                 'artists_tracks'
             );
 
-            artistsTracks = await tx.any(insert);
+            await tx.any(insert);
 
             scrobble = await getInsertScrobble(tx, {
                 track_id: track.id,
