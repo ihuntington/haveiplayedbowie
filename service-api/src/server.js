@@ -4,9 +4,21 @@ const process = require('process');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
+const addDays = require('date-fns/addDays');
+const formatISO = require('date-fns/formatISO');
+const isToday = require('date-fns/isToday');
+const qs = require('query-string');
 const db = require('./db');
 
 let server;
+
+const formatDate = (date) => {
+    return formatISO(date, { representation: "date" });
+};
+
+const formatLink = (url, query) => {
+    return qs.stringifyUrl({ url, query });
+};
 
 function setup() {
     // Connect to Postgres
@@ -22,21 +34,35 @@ function setup() {
         path: '/scrobbles',
         options: {
             handler: async (request, h) => {
+                const { origin, pathname } = request.url;
+                const url = `${origin}${pathname}`;
                 const { username, date } = request.query;
+                const previousDate = addDays(date, -1);
+                const nextDate = addDays(date, 1);
+                const links = {
+                    previous: formatLink(url, { date: formatDate(previousDate), username }),
+                    next: isToday(date) ? null : formatLink(url, { date: formatDate(nextDate), username }),
+                };
+
+                let items = [];
 
                 try {
-                    const scrobbles = await db.getScrobbles(username, date);
-                    return { scrobbles };
+                    items = await db.getScrobbles(username, date);
                 } catch (e) {
                     console.log("Could not fetch scrobbles for user", username);
                     console.error(e);
                     return h.response().code(400);
                 }
+
+                return {
+                    items,
+                    links,
+                };
             },
             validate: {
                 query: Joi.object({
                     username: Joi.string().required().min(2).max(50),
-                    date: Joi.date().required().iso().max('now'),
+                    date: Joi.date().required().iso(),
                 }),
             },
         },
