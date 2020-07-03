@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "env-cmd -f .env.local node src/index.js",
     "debug": "env-cmd -f .env.local nodemon --inspect src/index.js"
   },
   "keywords": [],
