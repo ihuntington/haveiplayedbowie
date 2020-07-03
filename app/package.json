@@ -19,8 +19,8 @@
     "@hapi/vision": "^5.5.4",
     "@hapi/wreck": "^16.0.1",
     "date-fns": "^2.9.0",
+    "date-fns-tz": "^1.0.10",
     "handlebars": "^4.7.0",
-    "luxon": "^1.23.0",
     "pg-promise": "^10.3.2",
     "ramda": "^0.26.1"
   },

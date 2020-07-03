@@ -1,13 +1,6 @@
 'use strict';
 
 const process = require('process');
-
-if (process.env.NODE_ENV === 'production') {
-    require('@google-cloud/debug-agent').start({
-        allowExpressions: true,
-    });
-}
-
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
@@ -20,7 +13,7 @@ let server = null;
 
 const setup = async () => {
     // Connect to Postgres
-    db.connect();
+    // db.connect();
 
     server = Hapi.server({
         port: process.env.PORT || 8080,
@@ -47,44 +40,44 @@ const setup = async () => {
         // partialsPath: './view/partials',
     });
 
-    server.auth.strategy('session', 'cookie', {
-        cookie: {
-            name: 'sid',
-            password: process.env.COOKIE_PASSWORD,
-            isSecure: process.env.NODE_ENV === 'production',
-            path: '/',
-        },
-        redirectTo: '/login',
-        validateFunc: async (request, session) => {
-            try {
-                const account = await db.getUser(session.id);
+    // server.auth.strategy('session', 'cookie', {
+    //     cookie: {
+    //         name: 'sid',
+    //         password: process.env.COOKIE_PASSWORD,
+    //         isSecure: process.env.NODE_ENV === 'production',
+    //         path: '/',
+    //     },
+    //     redirectTo: '/login',
+    //     validateFunc: async (request, session) => {
+    //         try {
+    //             const account = await db.getUser(session.id);
 
-                if (!account) {
-                    return { valid: false };
-                }
+    //             if (!account) {
+    //                 return { valid: false };
+    //             }
 
-                return {
-                    valid: true,
-                    credentials: account,
-                };
-            } catch (err) {
-                console.log('Session cookie validate error');
-                console.error(err.stack);
-                return { valid: false };
-            }
-        }
-    });
+    //             return {
+    //                 valid: true,
+    //                 credentials: account,
+    //             };
+    //         } catch (err) {
+    //             console.log('Session cookie validate error');
+    //             console.error(err.stack);
+    //             return { valid: false };
+    //         }
+    //     }
+    // });
 
-    server.auth.strategy('spotify', 'bell', {
-        provider: 'spotify',
-        password: process.env.SPOTIFY_COOKIE_PASSWORD,
-        clientId: process.env.SPOTIFY_CLIENT_ID,
-        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-        // App engine runs as non-https
-        forceHttps: process.env.NODE_ENV === 'production',
-        isSecure: process.env.NODE_ENV === 'production',
-        scope: ['user-read-email', 'user-read-recently-played']
-    });
+    // server.auth.strategy('spotify', 'bell', {
+    //     provider: 'spotify',
+    //     password: process.env.SPOTIFY_COOKIE_PASSWORD,
+    //     clientId: process.env.SPOTIFY_CLIENT_ID,
+    //     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    //     // App engine runs as non-https
+    //     forceHttps: process.env.NODE_ENV === 'production',
+    //     isSecure: process.env.NODE_ENV === 'production',
+    //     scope: ['user-read-email', 'user-read-recently-played']
+    // });
 
     // server.auth.default('session');
 
@@ -109,10 +102,10 @@ const setup = async () => {
         method: 'GET',
         path: '/users/{user}/diary',
         config: {
-            auth: {
-                strategy: 'session',
-                mode: 'optional',
-            },
+            // auth: {
+            //     strategy: 'session',
+            //     mode: 'optional',
+            // },
             handler: routes.users.diary,
             validate: {
                 params: Joi.object({
@@ -143,34 +136,34 @@ const setup = async () => {
         handler: routes.charts,
     });
 
-    server.route({
-        method: ['GET', 'POST'],
-        path: '/auth/spotify',
-        options: {
-            auth: 'spotify',
-            handler: routes.auth.spotifyAuth,
-        },
-    });
+    // server.route({
+    //     method: ['GET', 'POST'],
+    //     path: '/auth/spotify',
+    //     options: {
+    //         auth: 'spotify',
+    //         handler: routes.auth.spotifyAuth,
+    //     },
+    // });
 
-    server.route({
-        method: 'GET',
-        path: '/login',
-        options: {
-            auth: {
-                mode: 'try',
-                strategy: 'session',
-            },
-            plugins: {
-                // If a default server strategy was set then here the strategy
-                // options can be overridden.
-                'hapi-auth-cookie': {
-                    // Remove redirection to stop infinite loop
-                    redirectTo: false,
-                },
-            },
-            handler: routes.auth.login,
-        },
-    });
+    // server.route({
+    //     method: 'GET',
+    //     path: '/login',
+    //     options: {
+    //         auth: {
+    //             mode: 'try',
+    //             strategy: 'session',
+    //         },
+    //         plugins: {
+    //             // If a default server strategy was set then here the strategy
+    //             // options can be overridden.
+    //             'hapi-auth-cookie': {
+    //                 // Remove redirection to stop infinite loop
+    //                 redirectTo: false,
+    //             },
+    //         },
+    //         handler: routes.auth.login,
+    //     },
+    // });
 
     server.route({
         method: 'GET',
@@ -178,34 +171,34 @@ const setup = async () => {
         handler: routes.auth.logout,
     });
 
-    server.route({
-        method: 'GET',
-        path: '/account/username',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'required',
-            },
-            handler: routes.account.getUsername,
-        },
-    });
+    // server.route({
+    //     method: 'GET',
+    //     path: '/account/username',
+    //     options: {
+    //         auth: {
+    //             strategy: 'session',
+    //             mode: 'required',
+    //         },
+    //         handler: routes.account.getUsername,
+    //     },
+    // });
 
-    server.route({
-        method: 'POST',
-        path: '/account/username',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'required',
-            },
-            handler: routes.account.postUsername,
-            validate: {
-                payload: Joi.object({
-                    username: Joi.string().min(2).max(50),
-                }),
-            },
-        },
-    });
+    // server.route({
+    //     method: 'POST',
+    //     path: '/account/username',
+    //     options: {
+    //         auth: {
+    //             strategy: 'session',
+    //             mode: 'required',
+    //         },
+    //         handler: routes.account.postUsername,
+    //         validate: {
+    //             payload: Joi.object({
+    //                 username: Joi.string().min(2).max(50),
+    //             }),
+    //         },
+    //     },
+    // });
 
     server.route({
         method: 'GET',
@@ -241,10 +234,10 @@ const setup = async () => {
         method: 'GET',
         path: '/',
         options: {
-            auth: {
-                strategy: 'session',
-                mode: 'optional',
-            },
+            // auth: {
+            //     strategy: 'session',
+            //     mode: 'optional',
+            // },
             handler: (request, h) => {
                 if (request.auth.isAuthenticated) {
                     return h.view('index', {
