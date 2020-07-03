@@ -6,23 +6,20 @@ const differenceInMinutes = require('date-fns/differenceInMinutes');
 const getMinutes = require('date-fns/getMinutes');
 const getHours = require('date-fns/getHours');
 const getTime = require('date-fns/getTime');
-const parseISO = require('date-fns/parseISO');
 const set = require('date-fns/set');
 const subMilliseconds = require('date-fns/subMilliseconds');
 const { utcToZonedTime } = require('date-fns-tz');
 const { head, last } = require('ramda');
+
+const TEN_MINUTES_IN_PX = 24;
 
 function getHourlyIntervals(dateLeft, dateRight) {
     if (dateLeft > dateRight) {
         throw new Error('Date 1 must be a date before Date 2');
     }
 
-    // const d1 = set(new Date(dateLeft), { minutes: 0, seconds: 0, milliseconds: 0 });
-    // const d2 = set(new Date(dateRight), { minutes: 0, seconds: 0, milliseconds: 0 });
     const start = set(dateLeft, { minutes: 0, seconds: 0, milliseconds: 0 });
     const end = set(dateRight, { minutes: 0, seconds: 0, milliseconds: 0 });
-    // const start = utcToZonedTime(d1, 'utc');
-    // const end = utcToZonedTime(d2, 'utc');
     const intervals = [];
 
     let current = start;
@@ -81,10 +78,7 @@ function getTrackTimings(playedAt, ms = 3 * 60000) {
     };
 }
 
-// TODO: rename this function
-function calculatePosY(minutes) {
-    const TEN_MINUTES_IN_PX = 24;
-
+function minutesInUnits(minutes) {
     if (minutes === 0) {
         return 0;
     }
@@ -108,10 +102,12 @@ function addTrackTimings(track) {
 
 function calculateTrackHeight(track, index, arr) {
     const ONE_MINUTE = 60000;
+    const MIN_TRACK_DURATION_IN_MINUTES = 3;
+
     const roundedDuration = Math.round((track.duration.ms / 1000) / 60);
+
     let skipped = false;
-    // The minimum track height is 3 minutes
-    let trackHeight = Math.max(3, roundedDuration);
+    let trackHeight = Math.max(MIN_TRACK_DURATION_IN_MINUTES, roundedDuration);
 
     if (index + 1 !== arr.length) {
         const nextTrack = arr[index + 1];
@@ -122,7 +118,7 @@ function calculateTrackHeight(track, index, arr) {
         }
 
         if (difference > 0 && difference <= ONE_MINUTE) {
-            trackHeight = Math.max(3, differenceInMinutes(nextTrack.startTime, track.startTime));
+            trackHeight = Math.max(MIN_TRACK_DURATION_IN_MINUTES, differenceInMinutes(nextTrack.startTime, track.startTime));
         }
     }
 
@@ -146,19 +142,19 @@ function createMapFromIntervals(intervals) {
 }
 
 function diary(scrobbles) {
-    const tracksWithTimes = scrobbles.map(addTrackTimings).map(calculateTrackHeight);
-    const firstDate = head(tracksWithTimes).startTime;
-    const lastDate = last(tracksWithTimes).startTime;
+    const scrobblesWithTimings = scrobbles.map(addTrackTimings).map(calculateTrackHeight);
+    const firstDate = head(scrobblesWithTimings).startTime;
+    const lastDate = last(scrobblesWithTimings).startTime;
     const intervals = getHourlyIntervals(firstDate, lastDate);
     const diaryMap = createMapFromIntervals(intervals);
 
-    for (const track of tracksWithTimes) {
+    for (const track of scrobblesWithTimings) {
         const hour = getTime(set(track.startTime, { minutes: 0, seconds: 0, milliseconds: 0 }));
         diaryMap[hour].tracks.push(track);
     }
 
     const tr = Object.values(diaryMap).map(({hour, tracks}, rangeIndex, rangeArr) => {
-        let hourHeight = 24 * 6;
+        let hourHeight = TEN_MINUTES_IN_PX * 6;
 
         const items = tracks.map((track, tracksIndex, tracksArr) => {
             let posY = 0;
@@ -179,11 +175,11 @@ function diary(scrobbles) {
                     const roundedEndTime = addMinutes(previousTrack.startTime, previousTrack.trackHeight);
                     const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, hour);
                     const diff = differenceInMinutes(track.startTime, roundedEndTime);
-                    posY = (previousTrackMinutesInHour * 24) + calculatePosY(diff);
-                    hourHeight = posY + (track.trackHeight * 24);
+                    posY = (previousTrackMinutesInHour * TEN_MINUTES_IN_PX) + minutesInUnits(diff);
+                    hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 } else {
-                    posY = calculatePosY(getMinutes(track.startTime));
-                    hourHeight = posY + (track.trackHeight * 24);
+                    posY = minutesInUnits(getMinutes(track.startTime));
+                    hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 }
             } else {
                 let offset = 0;
@@ -193,11 +189,11 @@ function diary(scrobbles) {
                     track.startTime - previousTrack.endTime > 60000
                 ) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
-                    offset = diff * (24 / 10);
+                    offset = diff * (TEN_MINUTES_IN_PX / 10);
                 }
 
                 posY = hourHeight + offset;
-                hourHeight = posY + (track.trackHeight * 24);
+                hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
             }
 
             // Last track in the hour and it does not end in the next hour
@@ -205,13 +201,13 @@ function diary(scrobbles) {
             if (tracksIndex + 1 === tracksArr.length && !track.endsInNextHour) {
                 const roundedEndTime = addMinutes(track.startTime, track.trackHeight);
                 const diff = differenceInMinutes(addHours(hour, 1), roundedEndTime);
-                hourHeight = hourHeight + (calculatePosY(diff));
+                hourHeight = hourHeight + (minutesInUnits(diff));
             }
 
             // Adjust height of the hour row if last track ends in the next hour
             if (track.endsInNextHour) {
                 const roundedEndTime = addMinutes(track.startTime, track.trackHeight);
-                hourHeight = hourHeight - (getMinutes(roundedEndTime) * 24);
+                hourHeight = hourHeight - (getMinutes(roundedEndTime) * TEN_MINUTES_IN_PX);
             }
 
             return {
