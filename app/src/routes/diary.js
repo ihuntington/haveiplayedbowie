@@ -15,6 +15,7 @@ const { head, last } = require('ramda');
 
 const TEN_MINUTES_IN_PX = 24;
 const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
+const MIN_TRACK_DURATION_MS = 3 * 60000;
 
 function getHourlyIntervals(dateLeft, dateRight) {
     if (dateLeft > dateRight) {
@@ -67,17 +68,18 @@ function getDuration(ms) {
  * @returns {Timings}
  *  The timings of the track
  */
-function getTrackTimings(playedAt, ms = 3 * 60000) {
+function getTrackTimings(playedAt, ms) {
+    const trackDuration = ms || MIN_TRACK_DURATION_MS;
     let endTime;
     let startTime;
-    let duration = getDuration(ms);
+    let duration = getDuration(trackDuration);
 
     if (playedAt >= SPOTIFY_START_DATE) {
         endTime = playedAt;
-        startTime = subMilliseconds(endTime, ms);
+        startTime = subMilliseconds(endTime, trackDuration);
     } else {
         startTime = playedAt;
-        endTime = addMilliseconds(startTime, ms);
+        endTime = addMilliseconds(startTime, trackDuration);
     }
 
     let endsInNextHour = getHours(startTime) !== getHours(endTime);
@@ -199,7 +201,7 @@ function diary(scrobbles) {
                 let offset = 0;
 
                 if (
-                    previousTrack.track_duration &&
+                    previousTrack.duration.ms &&
                     track.startTime - previousTrack.endTime > 60000
                 ) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
