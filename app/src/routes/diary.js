@@ -1,7 +1,9 @@
 'use strict';
 
+const process = require('process');
 const addHours = require('date-fns/addHours');
 const addMinutes = require('date-fns/addMinutes');
+const addMilliseconds = require('date-fns/addMilliseconds');
 const differenceInMinutes = require('date-fns/differenceInMinutes');
 const getMinutes = require('date-fns/getMinutes');
 const getHours = require('date-fns/getHours');
@@ -12,6 +14,7 @@ const { utcToZonedTime } = require('date-fns-tz');
 const { head, last } = require('ramda');
 
 const TEN_MINUTES_IN_PX = 24;
+const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
 
 function getHourlyIntervals(dateLeft, dateRight) {
     if (dateLeft > dateRight) {
@@ -65,9 +68,18 @@ function getDuration(ms) {
  *  The timings of the track
  */
 function getTrackTimings(playedAt, ms = 3 * 60000) {
+    let endTime;
+    let startTime;
     let duration = getDuration(ms);
-    let endTime = utcToZonedTime(new Date(playedAt), 'utc');
-    let startTime = subMilliseconds(endTime, ms);
+
+    if (playedAt >= SPOTIFY_START_DATE) {
+        endTime = playedAt;
+        startTime = subMilliseconds(endTime, ms);
+    } else {
+        startTime = playedAt;
+        endTime = addMilliseconds(startTime, ms);
+    }
+
     let endsInNextHour = getHours(startTime) !== getHours(endTime);
 
     return {
@@ -94,10 +106,12 @@ function minutesInUnits(minutes) {
 }
 
 function addTrackTimings(track) {
+    const playedAt = utcToZonedTime(new Date(track.played_at), 'utc');
+
     return {
         ...track,
-        ...getTrackTimings(track.played_at, track.track.duration),
-    }
+        ...getTrackTimings(playedAt, track.track.duration),
+    };
 }
 
 function calculateTrackHeight(track, index, arr) {
