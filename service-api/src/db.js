@@ -157,3 +157,8 @@ exports.updateUserTokens = (uid, tokens) => {
 exports.updateRecentlyPlayed = (uid) => {
     return client.none(sql.users.updateRecentlyPlayed, { uid });
 };
+
+exports.findUserBy = (query, select) => {
+    const where = pgp.as.format('WHERE $1:name = $2', Object.entries(query)[0]);
+    return client.one('SELECT $1:name FROM users $2:raw', [select, where]);
+};

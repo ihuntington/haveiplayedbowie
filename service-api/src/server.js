@@ -99,6 +99,31 @@ function setup() {
     });
 
     server.route({
+        method: 'GET',
+        path: '/users',
+        options: {
+            validate: {
+                query: Joi.object({
+                    id: Joi.string().guid({ version: ['uuidv4'] }),
+                    email: Joi.string().email(),
+                    username: Joi.string().min(2).max(50),
+                }).oxor('email', 'username', 'id'),
+            },
+            handler: async (request) => {
+                let records = [];
+
+                try {
+                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile']);
+                } catch (e) {
+                    console.log('Could not find user');
+                }
+
+                return records;
+            },
+        },
+    });
+
+    server.route({
         method: 'PATCH',
         path: '/users/{uid}',
         options: {
