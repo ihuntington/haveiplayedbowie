@@ -11,6 +11,8 @@ const transformTotal = (item) => ({
 });
 
 const config = {
+    host: 'localhost',
+    port: 5432,
     user: process.env.SQL_USER,
     password: process.env.SQL_PASSWORD,
     database: process.env.SQL_DATABASE,
@@ -19,16 +21,6 @@ const config = {
 let client;
 
 const connect = () => {
-    if (
-        process.env.INSTANCE_CONNECTION_NAME &&
-        process.env.NODE_ENV === 'production'
-    ) {
-        config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
-    } else {
-        config.host = 'localhost';
-        config.port = 5432;
-    }
-
     if (client) {
         return client;
     }

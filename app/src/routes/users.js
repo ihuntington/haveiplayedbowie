@@ -1,11 +1,10 @@
 'use strict';
 
+const process = require('process');
 const Wreck = require('@hapi/wreck');
 const addDays = require('date-fns/addDays');
 const formatISO = require('date-fns/formatISO');
 const isToday = require('date-fns/isToday');
-const { errors } = require('pg-promise');
-const db = require('../db');
 const createDiary = require('./diary');
 
 function formatDate(date) {
@@ -17,39 +16,25 @@ function formatLink(url, date) {
 }
 
 async function diary(request, h) {
+    const { SERVICE_API_URL } = process.env;
     const user = request.params.user;
     const queryDate = request.query.date || new Date();
-    const { payload } = await Wreck.get(`http://0.0.0.0:5000/scrobbles?username=${user}&date=${formatISO(queryDate, { representation: 'date' })}`, {
+    const date = formatISO(queryDate, { representation: 'date' });
+
+    /**
+     * TODO:
+     * - user does not exist: 404
+     */
+
+    const { payload } = await Wreck.get(`${SERVICE_API_URL}/scrobbles?username=${user}&date=${date}`, {
         json: true,
     });
-    // const previousDate = addDays(queryDate, -1);
-    // const nextDate = addDays(queryDate, 1);
-    // const links = {
-    //     previous: formatLink(request.url, formatDate(previousDate)),
-    //     next: isToday(queryDate) ? null : formatLink(request.url, formatDate(nextDate)),
-    // };
 
     let items = [];
 
-    // try {
-    //     const scrobbles = await db.getScrobbles(user, queryDate)
     if (payload.items.length !== 0) {
         items = createDiary(payload.items);
     }
-    // } catch (err) {
-    //     // Internally within getScrobbles no user was found and an error was thrown
-    //     // Really the below should happen within getScrobbles and then app specific
-    //     // error could be thrown which means no user found.
-    //     //
-    //     // db find a user with a username of X and return id
-    //     // db find all scrobbles of user id
-    //     if (err instanceof errors.QueryResultError) {
-    //         if (err.result.rowCount === 0) {
-    //             // TODO: render a view which denotes that no user was found
-    //             return h.response().code(404);
-    //         }
-    //     }
-    // }
 
     const viewContext = {
         // TODO: hasBowie?

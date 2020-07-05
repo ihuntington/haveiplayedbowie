@@ -1,12 +1,10 @@
 'use strict';
 
-const db = require('../db')
+const process = require('process');
+const Wreck = require('@hapi/wreck');
 
 function getUsername(request, h) {
-    if (
-        request.auth.isAuthenticated &&
-        request.auth.credentials.username
-    ) {
+    if (request.auth.credentials.username) {
         return h.redirect('/');
     }
 
@@ -16,16 +14,19 @@ function getUsername(request, h) {
 }
 
 async function postUsername(request, h) {
-    if (
-        request.auth.isAuthenticated &&
-        request.auth.credentials.username
-    ) {
+    if (request.auth.credentials.username) {
         return h.redirect('/');
     }
 
     try {
         const uid = request.auth.credentials.id;
-        await db.updateUsername(uid, request.payload.username);
+
+        await Wreck.patch(`${process.env.SERVICE_API_URL}/users/${uid}`, {
+            payload: {
+                ...request.payload,
+            },
+        });
+
         return h.redirect('/');
     } catch (err) {
         console.log(err);

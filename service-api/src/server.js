@@ -113,12 +113,48 @@ function setup() {
                 let records = [];
 
                 try {
-                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile']);
+                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile', 'username']);
                 } catch (e) {
                     console.log('Could not find user');
                 }
 
                 return records;
+            },
+        },
+    });
+
+    server.route({
+        method: 'POST',
+        path: '/users',
+        options: {
+            validate: {
+                payload: Joi.object({
+                    email: Joi.string().email().required(),
+                    token: Joi.string().required(),
+                    refreshToken: Joi.string().required(),
+                    profile: Joi.object({
+                        displayName: Joi.string().required(),
+                        id: Joi.string().required(),
+                        username: Joi.string().required(),
+                    }),
+                }),
+            },
+            handler: async (request, h) => {
+                const { refreshToken, ...payload } = request.payload;
+
+                try {
+                    const newUser = {
+                        ...payload,
+                        refresh_token: refreshToken,
+                    };
+
+                    const user = await db.insertUser(newUser);
+
+                    return h.response(user).code(201);
+                } catch (e) {
+                    console.log('Unable to insert user');
+                    console.error(e);
+                }
             },
         },
     });
@@ -131,7 +167,7 @@ function setup() {
                 const { uid } = request.params;
 
                 try {
-                    await db.updateUserTokens(uid, request.payload);
+                    await db.updateUser(uid, request.payload);
                 } catch (e) {
                     console.log('Unable to update user');
                     console.error(e);
@@ -142,12 +178,13 @@ function setup() {
             },
             validate: {
                 params: Joi.object({
-                    uid: Joi.string().required().min(2).max(50),
+                    uid: Joi.string().required().guid({ version: ['uuidv4'] }),
                 }),
                 payload: Joi.object({
                     token: Joi.string(),
                     refresh_token: Joi.string(),
-                }),
+                    username: Joi.string().min(2).max(50),
+                }).without('username', ['token', 'refresh_token']).and('token', 'refresh_token'),
             },
         },
     });

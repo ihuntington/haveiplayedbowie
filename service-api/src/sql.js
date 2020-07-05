@@ -28,6 +28,7 @@ module.exports = {
         insert: sql('tracks/insert.sql'),
     },
     users: {
+        insert: sql('users/insert.sql'),
         readAllByRecentlyPlayed: sql('users/select-by-recently-played.sql'),
         findByEmail: sql('/users/find-by-email.sql'),
         findByUsername: sql('users/select-by-username.sql'),

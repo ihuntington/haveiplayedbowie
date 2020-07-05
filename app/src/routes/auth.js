@@ -1,6 +1,7 @@
 'use strict';
 
-const db = require('../db');
+const process = require('process');
+const Wreck = require('@hapi/wreck');
 
 async function spotifyAuth(request, h) {
     if (!request.auth.isAuthenticated) {
@@ -10,7 +11,12 @@ async function spotifyAuth(request, h) {
     try {
         const { credentials } = request.auth;
 
-        let user = await db.getUserByEmail(credentials.profile.email);
+        const response = await Wreck.get(`${process.env.SERVICE_API_URL}/users?email=${credentials.profile.email}`, {
+            json: true,
+        });
+
+        let user = response.payload;
+
         // TODO: even if user exists, may want to update profile in case any changes
         if (!user) {
             const profile = {
@@ -19,12 +25,17 @@ async function spotifyAuth(request, h) {
                 username: credentials.profile.username,
             };
 
-            user = await db.addUser({
-                email: credentials.profile.email,
-                token: credentials.token,
-                refreshToken: credentials.refreshToken,
-                profile: JSON.stringify(profile),
+            const newUserResponse = await Wreck.post(`${process.env.SERVICE_API_URL}/users`, {
+                payload: {
+                    email: credentials.profile.email,
+                    token: credentials.token,
+                    refreshToken: credentials.refreshToken,
+                    profile,
+                },
+                json: true,
             });
+
+            user = newUserResponse.payload;
         }
 
         request.cookieAuth.set({ id: user.id });
