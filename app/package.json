@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "env-cmd -f .env jest",
-    "debug": "env-cmd -f .env nodemon --inspect src/index.js 8080 --watch src --ext js,sql"
+    "start": "env-cmd -f .env.local node src/index.js",
+    "test": "env-cmd -f .env.local jest",
+    "debug": "env-cmd -f .env.local nodemon --inspect src/index.js 8080 --watch src --ext js,sql"
   },
   "keywords": [],
   "author": "Ian Huntington",
