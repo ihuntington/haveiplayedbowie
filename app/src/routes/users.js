@@ -20,6 +20,12 @@ async function diary(request, h) {
     const user = request.params.user;
     const queryDate = request.query.date || new Date();
     const date = formatISO(queryDate, { representation: 'date' });
+    const previousDate = addDays(queryDate, -1);
+    const nextDate = addDays(queryDate, 1);
+    const links = {
+        previous: formatLink(request.url, formatDate(previousDate)),
+        next: isToday(queryDate) ? null : formatLink(request.url, formatDate(nextDate)),
+    };
 
     /**
      * TODO:
@@ -42,7 +48,7 @@ async function diary(request, h) {
         user,
         date: formatDate(queryDate),
         items,
-        links: payload.links,
+        links,
         auth: {
             isAuthenticated: false,
         }
