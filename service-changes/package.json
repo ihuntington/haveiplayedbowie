@@ -18,7 +18,7 @@
     "nodemon": "^2.0.3"
   },
   "scripts": {
-    "debug": "env-cmd -f .env nodemon --inspect src/index.js --watch src --ext js,sql",
+    "debug": "env-cmd -f .env.local nodemon --inspect src/index.js --watch src --ext js",
     "start": "node src/index.js",
     "test": "jest"
   },
