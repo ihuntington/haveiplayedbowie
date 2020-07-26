@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/bell": "^11.1.0",
+    "@hapi/boom": "^9.1.0",
     "@hapi/cookie": "^10.1.2",
     "@hapi/hapi": "^18.4.0",
     "@hapi/inert": "^5.2.2",

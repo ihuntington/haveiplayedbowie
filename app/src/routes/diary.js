@@ -107,8 +107,8 @@ function minutesInUnits(minutes) {
     return tens + ones;
 }
 
-function addTrackTimings(track) {
-    const playedAt = utcToZonedTime(new Date(track.played_at), 'utc');
+function addTrackTimings(track, timezone = 'utc') {
+    const playedAt = utcToZonedTime(new Date(track.played_at), timezone);
 
     return {
         ...track,
@@ -157,8 +157,8 @@ function createMapFromIntervals(intervals) {
     return map;
 }
 
-function diary(scrobbles) {
-    const scrobblesWithTimings = scrobbles.map(addTrackTimings).map(calculateTrackHeight);
+function diary(scrobbles, timezone = 'utc') {
+    const scrobblesWithTimings = scrobbles.map((track) => addTrackTimings(track, timezone)).map(calculateTrackHeight);
     const firstDate = head(scrobblesWithTimings).startTime;
     const lastDate = last(scrobblesWithTimings).startTime;
     const intervals = getHourlyIntervals(firstDate, lastDate);

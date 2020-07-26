@@ -79,7 +79,7 @@ const setup = async () => {
 
     server.route({
         method: 'GET',
-        path: '/users/{user}/diary',
+        path: '/users/{username}/diary',
         config: {
             auth: {
                 strategy: 'session',
@@ -88,7 +88,7 @@ const setup = async () => {
             handler: routes.users.diary,
             validate: {
                 params: Joi.object({
-                    user: Joi.string().min(2).max(50),
+                    username: Joi.string().min(2).max(50),
                 }),
                 query: Joi.object({
                     date: Joi.date().iso().max('now'),

@@ -2,6 +2,7 @@
 
 const process = require('process');
 const Wreck = require('@hapi/wreck');
+const Boom = require('@hapi/boom');
 const addDays = require('date-fns/addDays');
 const formatISO = require('date-fns/formatISO');
 const isToday = require('date-fns/isToday');
@@ -17,7 +18,7 @@ function formatLink(url, date) {
 
 async function diary(request, h) {
     const { SERVICE_API_URL } = process.env;
-    const user = request.params.user;
+    const username = request.params.username;
     const queryDate = request.query.date || new Date();
     const date = formatISO(queryDate, { representation: 'date' });
     const previousDate = addDays(queryDate, -1);
@@ -27,25 +28,34 @@ async function diary(request, h) {
         next: isToday(queryDate) ? null : formatLink(request.url, formatDate(nextDate)),
     };
 
-    /**
-     * TODO:
-     * - user does not exist: 404
-     */
+    let timezone = 'utc';
 
-    const { payload } = await Wreck.get(`${SERVICE_API_URL}/scrobbles?username=${user}&date=${date}`, {
+    try {
+        const { payload } = await Wreck.get(`${SERVICE_API_URL}/users?username=${username}`, { json: true });
+        timezone = payload.timezone;
+    } catch (err) {
+        /**
+         * TODO:
+         * - user does not exist: 404
+         */
+        console.log(err);
+        return Boom.notFound('User does not exist');
+    }
+
+    const { payload } = await Wreck.get(`${SERVICE_API_URL}/scrobbles?username=${username}&date=${date}`, {
         json: true,
     });
 
     let items = [];
 
-    if (payload.items.length !== 0) {
-        items = createDiary(payload.items);
+    if (payload.items.length > 0) {
+        items = createDiary(payload.items, timezone);
     }
 
     const viewContext = {
         // TODO: hasBowie?
         hasBowie: false,
-        user,
+        user: username,
         date: formatDate(queryDate),
         items,
         links,
