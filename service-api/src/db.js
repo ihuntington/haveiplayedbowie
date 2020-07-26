@@ -103,7 +103,7 @@ exports.insertScrobbleFromSpotify = (uid, item) => {
                 )
             );
 
-            const insert = pgp().helpers.insert(
+            const insert = pgp.helpers.insert(
                 artists.map(({ id: artist_id }, index) => ({ artist_id, track_id: track.id, artist_order: index })),
                 ['artist_id', 'track_id', 'artist_order'],
                 'artists_tracks'
