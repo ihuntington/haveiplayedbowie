@@ -47,7 +47,7 @@ server.route({
         let users;
 
         try {
-            users = await Wreck.get('http://localhost:5000/users/recently-played', { json: true });
+            users = await Wreck.get(`${process.env.SERVICE_API_URL}/users/recently-played`, { json: true });
         } catch (err) {
             console.log('Cannot fetch users by recently played');
 
@@ -64,7 +64,7 @@ server.route({
         for await (const { user, tokens, tracks } of recentlyPlayedIterator) {
             if (user.token !== tokens.token || user.refresh_token !== tokens.refresh_token) {
                 try {
-                    await Wreck.patch(`http://localhost:5000/users/${user.id}`, {
+                    await Wreck.patch(`${process.env.SERVICE_API_URL}/users/${user.id}`, {
                         payload: { ...tokens },
                     });
                 } catch (e) {
@@ -73,7 +73,7 @@ server.route({
             }
 
             try {
-                const response = await Wreck.post('http://localhost:5000/scrobbles', {
+                const response = await Wreck.post(`${process.env.SERVICE_API_URL}/scrobbles`, {
                     payload: { user: user.id, items: tracks },
                     json: true,
                 });
