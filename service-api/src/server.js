@@ -113,9 +113,11 @@ function setup() {
                 let records = [];
 
                 try {
-                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile', 'username']);
+                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile', 'username', 'timezone']);
                 } catch (e) {
+                    console.log(e);
                     console.log('Could not find user');
+                    return Boom.badRequest();
                 }
 
                 return records;
