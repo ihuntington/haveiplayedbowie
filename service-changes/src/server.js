@@ -55,6 +55,7 @@ server.route({
         }
 
         if (users.payload.users.length === 0) {
+            console.log('No users to check for recently played');
             return { scrobbles: [] };
         }
 
@@ -62,6 +63,8 @@ server.route({
         const data = [];
 
         for await (const { user, tokens, tracks } of recentlyPlayedIterator) {
+            // TODO: bug here, if spotify errors then null is returned for tokens... and
+            // would be saved to DB.
             if (user.token !== tokens.token || user.refresh_token !== tokens.refresh_token) {
                 try {
                     await Wreck.patch(`${process.env.SERVICE_API_URL}/users/${user.id}`, {
