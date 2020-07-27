@@ -10,7 +10,7 @@ const { utcToZonedTime } = require('date-fns-tz');
 
 const createDiary = require('./diary');
 
-const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
+const SPOTIFY_START_DATE = utcToZonedTime(new Date(process.env.SPOTIFY_START_DATE), 'utc');
 
 function formatDate(date) {
     return formatISO(date, { representation: 'date' });
@@ -37,7 +37,7 @@ async function diary(request, h) {
     try {
         const { payload } = await Wreck.get(`${SERVICE_API_URL}/users?username=${username}`, { json: true });
 
-        if (date >= SPOTIFY_START_DATE) {
+        if (queryDate >= SPOTIFY_START_DATE) {
             timezone = payload.timezone;
         }
     } catch (err) {
