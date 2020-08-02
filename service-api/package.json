@@ -15,9 +15,11 @@
     "@hapi/hapi": "^18.4.1",
     "@hapi/joi": "^16.1.8",
     "date-fns": "^2.14.0",
-    "pg-promise": "^10.3.5",
+    "pg": "^8.3.0",
+    "pg-hstore": "^2.3.3",
     "query-string": "^6.13.1",
-    "rambda": "^5.4.0"
+    "rambda": "^5.4.0",
+    "sequelize": "^6.3.4"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
