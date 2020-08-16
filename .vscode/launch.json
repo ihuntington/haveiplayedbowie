@@ -4,6 +4,16 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    {
+        "name": "Seq",
+        "program": "${workspaceFolder}/service-api/src/seq.js",
+        "request": "launch",
+        "skipFiles": [
+            "<node_internals>/**"
+        ],
+        "type": "node",
+        "envFile": "${workspaceFolder}/service-api/.env.local",
+    },
         {
             "type": "node",
             "request": "attach",
