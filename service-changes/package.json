@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@hapi/boom": "^8.0.1",
-    "@hapi/hapi": "^18.4.0",
+    "@hapi/hapi": "^19.1.1",
     "@hapi/wreck": "^16.0.1",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8"
