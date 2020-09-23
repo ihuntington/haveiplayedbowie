@@ -18,7 +18,7 @@ async function spotifyAuth(request, h) {
 
         user = payload;
     } catch (err) {
-        if (e.data.payload.statusCode === 400) {
+        if (err.data.payload.statusCode === 400) {
             console.log('/auth could not match email address with existing user');
         } else {
             // TODO: server error
