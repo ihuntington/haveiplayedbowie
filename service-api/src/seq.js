@@ -1,171 +1,10 @@
 'use strict';
 
-const { Sequelize, DataTypes, Op } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.SQL_DB);
+const sequelize = require('./sequelize')
 
-const Track = sequelize.define('track', {
-    id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    duration_ms: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    spotify_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-}, {
-    timestamps: false,
-    underscored: true,
-});
-
-const Artist = sequelize.define('artist', {
-    id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    spotify_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-}, {
-    timestamps: false,
-    underscored: true,
-});
-
-const ArtistTrack = sequelize.define('artists_tracks', {
-    artist_id: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: Artist,
-            key: 'id',
-        },
-    },
-    track_id: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: Track,
-            key: 'id',
-        },
-    },
-    artist_order: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-    }
-}, {
-    timestamps: false,
-    underscored: true,
-    tableName: 'artists_tracks'
-});
-
-const User = sequelize.define('user', {
-    id: {
-        type: DataTypes.UUIDV4,
-        allowNull: false,
-        primaryKey: true,
-    },
-    token: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    refresh_token: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    email: {
-        type: DataTypes.STRING,
-        validate: {
-            max: 254,
-        },
-        allowNull: false,
-        unique: true,
-    },
-    created_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: Sequelize.NOW,
-    },
-    modified_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: Sequelize.NOW,
-    },
-    profile: {
-        type: DataTypes.JSON,
-        allowNull: false,
-    },
-    recently_played_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    username: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-            max: 50,
-            min: 2,
-        },
-        unique: true,
-    },
-    timezone: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: 'Europe/London',
-    },
-}, {
-    timestamps: false,
-    underscored: true,
-});
-
-const Scrobble = sequelize.define('scrobble', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false,
-    },
-    track_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    played_at: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-}, {
-    timestamps: false,
-    underscored: true,
-});
-
-
-Artist.belongsToMany(Track, { through: ArtistTrack, foreignKey: 'artist_id' });
-Track.belongsToMany(Artist, { through: ArtistTrack, foreignKey: 'track_id' });
-Track.hasMany(Scrobble, { foreignKey: 'track_id'});
-Scrobble.belongsTo(Track, { foreignKey: 'track_id' });
-User.hasMany(Scrobble, { foreignKey: 'user_id' });
-Scrobble.belongsTo(User, { foreignKey: 'user_id' });
-
-// const sequelize = new Sequelize(process.env.SQL_DB, process.env.SQL_USER, process.env.SQL_PASSWORD, {
-//     host: 'localhost',
-//     dialect: 'postgres',
-// });
+const { Artist, Scrobble, Track, User } = require('./models')
 
 const connect = async () => {
     try {
@@ -207,7 +46,8 @@ const connect = async () => {
             ],
         });
 
-        console.log(JSON.stringify(scrobbles));
+        let t = scrobbles.map(s => s.toJSON());
+        console.log(t[0].track.artists[0])
 
     } catch (e) {
         console.error('Unable to connect')

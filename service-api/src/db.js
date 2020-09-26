@@ -153,22 +153,3 @@ exports.getUsersByRecentlyPlayed = async () => {
 exports.updateUserTokens = (uid, tokens) => {
     return client.none(sql.users.updateTokens, { uid, ...tokens });
 };
-
-exports.updateRecentlyPlayed = (uid) => {
-    return client.none(sql.users.updateRecentlyPlayed, { uid });
-};
-
-exports.findUserBy = (query, select) => {
-    const where = pgp.as.format('WHERE $1:name = $2', Object.entries(query)[0]);
-    return client.one('SELECT $1:name FROM users $2:raw', [select, where]);
-};
-
-exports.insertUser = (user) => {
-    return client.one(sql.users.insert, { user });
-};
-
-exports.updateUser = (id, params) => {
-    const where = pgp.as.format('WHERE id = ${id}', { id });
-    const query = pgp.helpers.update(params, Object.keys(params), 'users') + where;
-    return client.none(query);
-};

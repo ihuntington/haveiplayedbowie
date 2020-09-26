@@ -4,25 +4,18 @@ const process = require('process');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const addDays = require('date-fns/addDays');
-const formatISO = require('date-fns/formatISO');
-const isToday = require('date-fns/isToday');
-const qs = require('query-string');
-const db = require('./db');
+const { Sequelize, Op } = require('sequelize');
+
+const sequelize = require('./sequelize')
+const { Artist, Scrobble, Track, User } = require('./models')
+const { scrobble } = require('./controllers')
 
 let server;
 
-const formatDate = (date) => {
-    return formatISO(date, { representation: "date" });
-};
-
-const formatLink = (url, query) => {
-    return qs.stringifyUrl({ url, query });
-};
-
-function setup() {
+async function setup() {
     // Connect to Postgres
-    db.connect();
+    // db.connect();
+    await sequelize.authenticate();
 
     server = Hapi.server({
         host: '0.0.0.0',
@@ -33,30 +26,51 @@ function setup() {
         method: 'GET',
         path: '/scrobbles',
         options: {
-            handler: async (request, h) => {
-                const { origin, pathname } = request.url;
-                const url = `${origin}${pathname}`;
+            handler: async (request) => {
                 const { username, date } = request.query;
-                const previousDate = addDays(date, -1);
-                const nextDate = addDays(date, 1);
-                const links = {
-                    previous: formatLink(url, { date: formatDate(previousDate), username }),
-                    next: isToday(date) ? null : formatLink(url, { date: formatDate(nextDate), username }),
-                };
 
-                let items = [];
+                let scrobbles = [];
 
                 try {
-                    items = await db.getScrobbles(username, date);
+                    const user = await User.findOne({
+                        attributes: ['id'],
+                        where: {
+                            username,
+                        },
+                    });
+
+                    scrobbles = await Scrobble.findAll({
+                        attributes: ['id', 'played_at', 'user_id'],
+                        where: {
+                            [Op.and]: [
+                                Sequelize.where(
+                                    Sequelize.cast(Sequelize.col('played_at'), 'date'),
+                                    date
+                                ),
+                                { user_id: user.id }
+                            ]
+                        },
+                        include: [
+                            {
+                                model: Track,
+                                include: {
+                                    model: Artist,
+                                    attributes: ['id', 'name'],
+                                    through: {
+                                        attributes: ['artist_order'],
+                                    },
+                                },
+                            },
+                        ],
+                    });
                 } catch (e) {
                     console.log("Could not fetch scrobbles for user", username);
                     console.error(e);
-                    return h.response().code(400);
+                    return Boom.badRequest();
                 }
 
                 return {
-                    items,
-                    links,
+                    scrobbles,
                 };
             },
             validate: {
@@ -72,7 +86,7 @@ function setup() {
         method: 'POST',
         path: '/scrobbles',
         options: {
-            handler: async (request, h) => {
+            handler: async (request) => {
                 const { user, items } = request.payload;
                 const scrobbles = [];
                 console.log(`Received ${items.length} scrobbles`);
@@ -81,7 +95,7 @@ function setup() {
                     console.log(`Add scrobbles for user ${user}`);
 
                     try {
-                        const result = await db.insertScrobbleFromSpotify(user, item);
+                        const result = await scrobble.insertScrobbleFromSpotify(user, item);
 
                         scrobbles.push(result.id)
                     } catch (e) {
@@ -91,7 +105,7 @@ function setup() {
                     }
                 }
 
-                await db.updateRecentlyPlayed(user);
+                // await db.updateRecentlyPlayed(user);
 
                 return { scrobbles };
             }
@@ -110,17 +124,22 @@ function setup() {
                 }).oxor('email', 'username', 'id'),
             },
             handler: async (request) => {
-                let records = [];
+                let users = []
 
                 try {
-                    records = await db.findUserBy({ ...request.query }, ['email', 'id', 'profile', 'username', 'timezone']);
-                } catch (e) {
-                    console.log(e);
-                    console.log('Could not find user');
-                    return Boom.badRequest();
+                    users = await User.findAll({
+                        where: {
+                            ...request.query,
+                        },
+                        attributes: {
+                            exclude: ['token', 'refresh_token']
+                        }
+                    })
+                } catch (err) {
+                    console.error('User.getByUsername', err);
                 }
 
-                return records;
+                return { users };
             },
         },
     });
@@ -150,12 +169,12 @@ function setup() {
                         refresh_token: refreshToken,
                     };
 
-                    const user = await db.insertUser(newUser);
+                    const result = await User.create(newUser);
 
-                    return h.response(user).code(201);
+                    return h.response(result).code(201);
                 } catch (e) {
-                    console.log('Unable to insert user');
-                    console.error(e);
+                    console.error('User.create', e)
+                    return Boom.badRequest()
                 }
             },
         },
@@ -166,17 +185,22 @@ function setup() {
         path: '/users/{uid}',
         options: {
             handler: async (request, h) => {
-                const { uid } = request.params;
+                let user = null;
 
                 try {
-                    await db.updateUser(uid, request.payload);
-                } catch (e) {
-                    console.log('Unable to update user');
-                    console.error(e);
+                    user = await User.update({
+                        ...request.payload
+                    }, {
+                        where: {
+                            id: request.params.uid,
+                        },
+                    });
+
+                    return h.response(user).code(204);
+                } catch (err) {
+                    console.error('User.update', err);
                     return Boom.badRequest();
                 }
-
-                return h.response().code(204);
             },
             validate: {
                 params: Joi.object({
@@ -195,11 +219,21 @@ function setup() {
         method: 'GET',
         path: '/users/recently-played',
         options: {
-            handler: async (request, h) => {
+            handler: async () => {
                 let users = [];
 
                 try {
-                    users = await db.getUsersByRecentlyPlayed();
+                    users = await User.findAll({
+                        attributes: ['id', 'token', 'refresh_token'],
+                        where: {
+                            recently_played_at: {
+                                [Op.or]: {
+                                    [Op.lt]: Sequelize.literal("now() - interval '6 minutes'"),
+                                    [Op.eq]: null,
+                                },
+                            },
+                        },
+                    });
                 } catch (error) {
                     console.log('Unable to get users by recently played');
                     console.error(error);
@@ -222,7 +256,7 @@ function setup() {
 }
 
 exports.start = async () => {
-    setup();
+    await setup();
     await server.start();
     console.log(`Server running at ${server.info.uri}`);
     return server;
