@@ -97,7 +97,9 @@ async function setup() {
                     try {
                         const result = await scrobble.insertScrobbleFromSpotify(user, item);
 
-                        scrobbles.push(result.id)
+                        if (result) {
+                            scrobbles.push(result.id);
+                        }
                     } catch (e) {
                         console.log(`Unable to add scrobbles for user ${user}`);
                         console.log(e);
