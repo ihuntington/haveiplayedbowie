@@ -27,7 +27,7 @@ async function setup() {
             handler: async (request) => {
                 const { username, date } = request.query;
 
-                let scrobbles = [];
+                let items = [];
 
                 try {
                     const user = await User.findOne({
@@ -37,7 +37,7 @@ async function setup() {
                         },
                     });
 
-                    scrobbles = await Scrobble.findAll({
+                    items = await Scrobble.findAll({
                         attributes: ['id', 'played_at', 'user_id'],
                         where: {
                             [Op.and]: [
@@ -68,7 +68,7 @@ async function setup() {
                 }
 
                 return {
-                    scrobbles,
+                    items,
                 };
             },
             validate: {
@@ -146,6 +146,30 @@ async function setup() {
                 }
 
                 return { users };
+            },
+        },
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/users/{uid}',
+        options: {
+            validate: {
+                params: Joi.object({
+                    uid: Joi.string().required().guid({ version: ['uuidv4'] }),
+                }),
+            },
+            handler: async (request) => {
+                try {
+                    const user = await User.findByPk(request.params.uid, {
+                        attributes: {
+                            exclude: ['token', 'refresh_token']
+                        }
+                    });
+                    return user;
+                } catch (err) {
+                    return Boom.notFound();
+                }
             },
         },
     });

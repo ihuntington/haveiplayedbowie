@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "env-cmd -f .env.local node src/seq.js",
-    "start": "env-cmd -f .env.local node src/index.js",
-    "debug": "env-cmd -f .env.local nodemon --inspect src/index.js"
+    "debug": "env-cmd -f .env.local nodemon --inspect src/index.js",
+    "dev": "env-cmd -f .env.local nodemon src/index.js",
+    "start": "env-cmd -f .env.local node src/index.js"
   },
   "keywords": [],
   "author": "",

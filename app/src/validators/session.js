@@ -5,7 +5,7 @@ const Wreck = require('@hapi/wreck');
 
 async function sessionValidator (request, session) {
     try {
-        const { payload } = await Wreck.get(`${process.env.SERVICE_API_URL}/users?id=${session.id}`, {
+        const { payload } = await Wreck.get(`${process.env.SERVICE_API_URL}/users/${session.id}`, {
             json: true,
         });
 

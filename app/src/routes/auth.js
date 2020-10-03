@@ -16,15 +16,16 @@ async function spotifyAuth(request, h) {
             json: true,
         });
 
-        user = payload;
-    } catch (err) {
-        if (err.data.payload.statusCode === 400) {
-            console.log('/auth could not match email address with existing user');
+        if (payload.users.length === 1) {
+            user = payload.users[0];
         } else {
-            // TODO: server error
-            console.error(err);
-            return h.redirect('/');
+            console.log('/auth could not find existing user by email');
         }
+    } catch (err) {
+        // TODO: server error
+        console.log('Error fetching user by email address');
+        console.error(err);
+        return h.redirect('/');
     }
 
     if (!user) {
