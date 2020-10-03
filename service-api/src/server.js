@@ -60,6 +60,7 @@ async function setup() {
                                 },
                             },
                         ],
+                        order: [['played_at', 'ASC']],
                     });
                 } catch (e) {
                     console.log("Could not fetch scrobbles for user", username);
