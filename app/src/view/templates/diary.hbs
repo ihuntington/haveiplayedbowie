@@ -34,7 +34,7 @@
                     {{#if this.track.id}}
                     <a href="/tracks/{{this.track.id}}" class="event-track-name">{{this.track.name}}</a>
                     {{/if}}
-                    {{#each this.artists}}
+                    {{#each this.track.artists}}
                     <span class="separator">&#183;</span>
                     <a href="/artists/{{this.id}}" class="event-artist-name">{{this.name}}</a>
                     {{/each}}
