@@ -10,14 +10,15 @@ const compare = (a, b) => {
     return sortedA.length === sortedB.length && sortedA.every((value, index) => {
         return value === sortedB[index];
     });
-}
+};
 
 exports.insertScrobbleFromSpotify = async (uid, item) => {
-    try {
-        const result = await sequelize.transaction(async (t) => {
-            let scrobble;
+    const requestArtistNames = item.track.artists.map(({ name }) => name);
 
-            const requestArtistNames = item.track.artists.map(({ name }) => name);
+    let result = null;
+
+    try {
+        result = await sequelize.transaction(async (transaction) => {
 
             // Find all tracks with the track name and artists
             const storedTracks = await Track.findAll({
@@ -36,74 +37,74 @@ exports.insertScrobbleFromSpotify = async (uid, item) => {
                 ]
             });
 
-            const match = storedTracks.find(({ artists }) => {
+            const existingTrack = storedTracks.find(({ artists }) => {
                 return compare(requestArtistNames, artists.map(({ name })=> name));
             });
 
-            if (match) {
-                console.log('>>> has match and adding scrobble')
-                const [record] = await Scrobble.findOrCreate({
+            if (existingTrack) {
+                const [scrobble] = await Scrobble.findOrCreate({
                     where: {
-                        track_id: match.id,
+                        track_id: existingTrack.id,
                         played_at: item.played_at,
                         user_id: uid,
                     },
-                    transaction: t,
+                    transaction,
                 })
 
-                scrobble = record;
-            } else {
-                const [track] = await Track.findOrCreate({
-                    where: {
-                        name: item.track.name,
-                        duration_ms: item.track.duration_ms,
-                        spotify_id: item.track.id,
-                    },
-                    transaction: t,
-                });
-
-                const artists = await Promise.all(item.track.artists.map(({ name, id }) => {
-                    return Artist.findOrCreate({
-                        where: {
-                            name,
-                            spotify_id: id,
-                        },
-                        transaction: t,
-                    });
-                }));
-
-                const artistsTracks = await ArtistTrack.bulkCreate(
-                    artists
-                        .map(([artist], index) => ({
-                            artist_id: artist.id,
-                            track_id: track.id,
-                            artist_order: index,
-                        })),
-                    {
-                        transaction: t,
-                    }
-                );
-
-                const [record, isNewScrobble] = await Scrobble.findOrCreate({
-                    where: {
-                        track_id: track.id,
-                        played_at: item.played_at,
-                        user_id: uid,
-                    },
-                    transaction: t,
-                });
-
-                console.log('>>> isNewScrobble', isNewScrobble);
-
-                scrobble = record;
+                return scrobble;
             }
 
-            return scrobble;
-        })
+            const [track] = await Track.findOrCreate({
+                where: {
+                    name: item.track.name,
+                    duration_ms: item.track.duration_ms,
+                    spotify_id: item.track.id,
+                },
+                transaction,
+            });
 
-        return result;
+            const artists = await Promise.all(item.track.artists.map(({ name, id }) => {
+                return Artist.findOrCreate({
+                    where: {
+                        name,
+                        spotify_id: id,
+                    },
+                    transaction,
+                });
+            }));
+
+            // Update junction table
+            await ArtistTrack.bulkCreate(
+                artists
+                    .map(([artist], index) => ({
+                        artist_id: artist.id,
+                        track_id: track.id,
+                        artist_order: index,
+                    })),
+                {
+                    transaction,
+                }
+            );
+
+            const [scrobble] = await Scrobble.findOrCreate({
+                where: {
+                    track_id: track.id,
+                    played_at: item.played_at,
+                    user_id: uid,
+                },
+                transaction,
+            });
+
+            return scrobble;
+        });
     } catch (err) {
-        console.log('Insert scrobble transaction failed');
+        console.log(`Insert scrobble transaction failed for user ${uid}`);
         console.error(err);
     }
+
+    if (result) {
+        return result.id;
+    }
+
+    return result;
 }

@@ -89,25 +89,31 @@ async function setup() {
             handler: async (request) => {
                 const { user, items } = request.payload;
                 const scrobbles = [];
-                console.log(`Received ${items.length} scrobbles`);
+
+                console.log(`Received ${items.length} scrobbles for user ${user}`);
 
                 for (const item of items) {
-                    console.log(`Add scrobbles for user ${user}`);
+                    const result = await scrobble.insertScrobbleFromSpotify(user, item);
 
-                    try {
-                        const result = await scrobble.insertScrobbleFromSpotify(user, item);
-
-                        if (result) {
-                            scrobbles.push(result.id);
-                        }
-                    } catch (e) {
-                        console.log(`Unable to add scrobbles for user ${user}`);
-                        console.log(e);
-                        scrobbles.push(null);
-                    }
+                    scrobbles.push(result);
                 }
 
-                // await db.updateRecentlyPlayed(user);
+                const success = scrobbles.filter(Boolean);
+
+                console.log(`Successfully inserted ${success.length} of ${items.length} scrobbles received for user ${user}`);
+
+                try {
+                    await User.update({
+                        recently_played_at: Sequelize.literal("now()"),
+                    }, {
+                        where: {
+                            id: user,
+                        },
+                    });
+                } catch (err) {
+                    console.log(`Unable to update recently_played_at for user ${user}`);
+                    console.error(err);
+                }
 
                 return { scrobbles };
             }
