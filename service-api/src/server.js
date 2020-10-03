@@ -13,8 +13,6 @@ const { scrobble } = require('./controllers')
 let server;
 
 async function setup() {
-    // Connect to Postgres
-    // db.connect();
     await sequelize.authenticate();
 
     server = Hapi.server({
