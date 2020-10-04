@@ -22,6 +22,25 @@ async function setup() {
 
     server.route({
         method: 'GET',
+        path: '/artists/{aid}/summary',
+        options: {
+            validate: {
+                params: Joi.object({
+                    aid: Joi.number().required(),
+                }),
+            },
+            handler: async (request, h) => {
+                try {
+                    return `ok`;
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+    })
+
+    server.route({
+        method: 'GET',
         path: '/scrobbles',
         options: {
             handler: async (request) => {
