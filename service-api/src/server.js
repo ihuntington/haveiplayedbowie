@@ -148,14 +148,7 @@ async function setup() {
                 let users = []
 
                 try {
-                    users = await User.findAll({
-                        where: {
-                            ...request.query,
-                        },
-                        attributes: {
-                            exclude: ['token', 'refresh_token']
-                        }
-                    })
+
                 } catch (err) {
                     console.error('User.getByUsername', err);
                 }

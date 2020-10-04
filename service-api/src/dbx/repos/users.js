@@ -17,6 +17,10 @@ class UsersRepository{
     async findByUsername(username) {
         return this.db.oneOrNone('SELECT * FROM users WHERE username = $1', username);
     }
+
+    async find(params) {
+        return this.db.any()
+    }
 }
 
 module.exports = UsersRepository;
