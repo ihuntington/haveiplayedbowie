@@ -29,7 +29,7 @@ module.exports = {
     },
     users: {
         insert: sql('users/insert.sql'),
-        readAllByRecentlyPlayed: sql('users/select-by-recently-played.sql'),
+        getByRecentlyPlayed: sql('users/select-by-recently-played.sql'),
         findByEmail: sql('/users/find-by-email.sql'),
         findByUsername: sql('users/select-by-username.sql'),
         updateTokens: sql('users/update-user-tokens.sql'),

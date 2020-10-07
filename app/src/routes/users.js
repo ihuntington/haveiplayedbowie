@@ -37,16 +37,16 @@ async function diary(request, h) {
     try {
         const { payload } = await Wreck.get(`${SERVICE_API_URL}/users?username=${username}`, { json: true });
 
+        if (payload.data.length !== 1) {
+            return Boom.notFound('/routes/diary - User not found');
+        }
+
         if (queryDate >= SPOTIFY_START_DATE) {
-            timezone = payload.timezone;
+            timezone = payload.data[0].timezone;
         }
     } catch (err) {
-        /**
-         * TODO:
-         * - user does not exist: 404
-         */
-        console.log(err);
-        return Boom.notFound('User does not exist');
+        console.error(err);
+        return Boom.badImplementation();
     }
 
     const { payload } = await Wreck.get(`${SERVICE_API_URL}/scrobbles?username=${username}&date=${date}`, {

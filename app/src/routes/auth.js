@@ -16,10 +16,8 @@ async function spotifyAuth(request, h) {
             json: true,
         });
 
-        if (payload.users.length === 1) {
-            user = payload.users[0];
-        } else {
-            console.log('/auth could not find existing user by email');
+        if (payload.data.length === 1) {
+            user = payload.data[0];
         }
     } catch (err) {
         // TODO: server error

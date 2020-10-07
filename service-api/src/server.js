@@ -34,66 +34,61 @@ async function setup() {
     //     }
     // })
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/scrobbles',
-    //     options: {
-    //         handler: async (request) => {
-    //             const { username, date } = request.query;
+    server.route({
+        method: 'GET',
+        path: '/scrobbles',
+        options: {
+            handler: async (request) => {
+                const { username, date } = request.query;
 
-    //             let items = [];
+                let items = [];
 
-    //             try {
-    //                 const user = await User.findOne({
-    //                     attributes: ['id'],
-    //                     where: {
-    //                         username,
-    //                     },
-    //                 });
+                try {
+                    const user = await db.users.findByUsername(username);
 
-    //                 items = await Scrobble.findAll({
-    //                     attributes: ['id', 'played_at', 'user_id'],
-    //                     where: {
-    //                         [Op.and]: [
-    //                             Sequelize.where(
-    //                                 Sequelize.cast(Sequelize.col('played_at'), 'date'),
-    //                                 date
-    //                             ),
-    //                             { user_id: user.id }
-    //                         ]
-    //                     },
-    //                     include: [
-    //                         {
-    //                             model: Track,
-    //                             include: {
-    //                                 model: Artist,
-    //                                 attributes: ['id', 'name'],
-    //                                 through: {
-    //                                     attributes: ['artist_order'],
-    //                                 },
-    //                             },
-    //                         },
-    //                     ],
-    //                     order: [['played_at', 'ASC']],
-    //                 });
-    //             } catch (e) {
-    //                 console.log("Could not fetch scrobbles for user", username);
-    //                 console.error(e);
-    //                 return Boom.badRequest();
-    //             }
+                    items = await Scrobble.findAll({
+                        attributes: ['id', 'played_at', 'user_id'],
+                        where: {
+                            [Op.and]: [
+                                Sequelize.where(
+                                    Sequelize.cast(Sequelize.col('played_at'), 'date'),
+                                    date
+                                ),
+                                { user_id: user.id }
+                            ]
+                        },
+                        include: [
+                            {
+                                model: Track,
+                                include: {
+                                    model: Artist,
+                                    attributes: ['id', 'name'],
+                                    through: {
+                                        attributes: ['artist_order'],
+                                    },
+                                },
+                            },
+                        ],
+                        order: [['played_at', 'ASC']],
+                    });
+                } catch (e) {
+                    console.log("Could not fetch scrobbles for user", username);
+                    console.error(e);
+                    return Boom.badRequest();
+                }
 
-    //             return {
-    //                 items,
-    //             };
-    //         },
-    //         validate: {
-    //             query: Joi.object({
-    //                 username: Joi.string().required().min(2).max(50),
-    //                 date: Joi.date().required().iso(),
-    //             }),
-    //         },
-    //     },
-    // });
+                return {
+                    items,
+                };
+            },
+            validate: {
+                query: Joi.object({
+                    username: Joi.string().required().min(2).max(50),
+                    date: Joi.date().required().iso(),
+                }),
+            },
+        },
+    });
 
     // server.route({
     //     method: 'POST',
@@ -145,15 +140,14 @@ async function setup() {
                 }).oxor('email', 'username', 'id'),
             },
             handler: async (request) => {
-                let users = []
-
                 try {
+                    const data = await db.users.find(request.query);
 
+                    return { data };
                 } catch (err) {
-                    console.error('User.getByUsername', err);
+                    console.error('Unable to find users', err);
+                    return Boom.badRequest();
                 }
-
-                return { users };
             },
         },
     });
@@ -185,105 +179,89 @@ async function setup() {
         },
     });
 
-    // server.route({
-    //     method: 'POST',
-    //     path: '/users',
-    //     options: {
-    //         validate: {
-    //             payload: Joi.object({
-    //                 email: Joi.string().email().required(),
-    //                 token: Joi.string().required(),
-    //                 refreshToken: Joi.string().required(),
-    //                 profile: Joi.object({
-    //                     displayName: Joi.string().required(),
-    //                     id: Joi.string().required(),
-    //                     username: Joi.string().required(),
-    //                 }),
-    //             }),
-    //         },
-    //         handler: async (request, h) => {
-    //             const { refreshToken, ...payload } = request.payload;
+    server.route({
+        method: 'POST',
+        path: '/users',
+        options: {
+            validate: {
+                payload: Joi.object({
+                    email: Joi.string().email().required(),
+                    token: Joi.string().required(),
+                    refreshToken: Joi.string().required(),
+                    profile: Joi.object({
+                        displayName: Joi.string().required(),
+                        id: Joi.string().required(),
+                        username: Joi.string().required(),
+                    }),
+                }),
+            },
+            handler: async (request, h) => {
+                const { refreshToken, ...payload } = request.payload;
 
-    //             try {
-    //                 const newUser = {
-    //                     ...payload,
-    //                     refresh_token: refreshToken,
-    //                 };
+                try {
+                    const user = {
+                        ...payload,
+                        refresh_token: refreshToken,
+                    };
 
-    //                 const result = await User.create(newUser);
+                    const data = await db.users.add(user);
 
-    //                 return h.response(result).code(201);
-    //             } catch (e) {
-    //                 console.error('User.create', e)
-    //                 return Boom.badRequest()
-    //             }
-    //         },
-    //     },
-    // });
+                    return h.response(data).code(201);
+                } catch (e) {
+                    // TODO: what way to send that the email address is taken
+                    console.error('Unable to add new user', e);
+                    return Boom.badImplementation();
+                }
+            },
+        },
+    });
 
-    // server.route({
-    //     method: 'PATCH',
-    //     path: '/users/{uid}',
-    //     options: {
-    //         handler: async (request, h) => {
-    //             let user = null;
+    server.route({
+        method: 'PATCH',
+        path: '/users/{uid}',
+        options: {
+            validate: {
+                params: Joi.object({
+                    uid: Joi.string().required().guid({ version: ['uuidv4'] }),
+                }),
+                payload: Joi.object({
+                    token: Joi.string(),
+                    refresh_token: Joi.string(),
+                    username: Joi.string().min(2).max(50),
+                }).without('username', ['token', 'refresh_token']).and('token', 'refresh_token'),
+            },
+            handler: async (request, h) => {
+                try {
+                    await db.users.update(request.params.uid, request.payload);
 
-    //             try {
-    //                 user = await User.update({
-    //                     ...request.payload
-    //                 }, {
-    //                     where: {
-    //                         id: request.params.uid,
-    //                     },
-    //                 });
+                    return h.response().code(204);
+                } catch (err) {
+                    console.error('User.update', err);
+                    return Boom.badRequest();
+                }
+            },
+        },
+    });
 
-    //                 return h.response(user).code(204);
-    //             } catch (err) {
-    //                 console.error('User.update', err);
-    //                 return Boom.badRequest();
-    //             }
-    //         },
-    //         validate: {
-    //             params: Joi.object({
-    //                 uid: Joi.string().required().guid({ version: ['uuidv4'] }),
-    //             }),
-    //             payload: Joi.object({
-    //                 token: Joi.string(),
-    //                 refresh_token: Joi.string(),
-    //                 username: Joi.string().min(2).max(50),
-    //             }).without('username', ['token', 'refresh_token']).and('token', 'refresh_token'),
-    //         },
-    //     },
-    // });
+    server.route({
+        method: 'GET',
+        path: '/users/recently-played',
+        options: {
+            handler: async () => {
+                let users = [];
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/users/recently-played',
-    //     options: {
-    //         handler: async () => {
-    //             let users = [];
+                try {
+                    users = await db.users.findByRecentlyPlayed();
+                } catch (error) {
+                    console.log('Unable to get users by recently played');
+                    console.error(error);
+                    return Boom.badRequest();
+                }
 
-    //             try {
-    //                 users = await User.findAll({
-    //                     attributes: ['id', 'token', 'refresh_token'],
-    //                     where: {
-    //                         recently_played_at: {
-    //                             [Op.or]: {
-    //                                 [Op.lt]: Sequelize.literal("now() - interval '6 minutes'"),
-    //                                 [Op.eq]: null,
-    //                             },
-    //                         },
-    //                     },
-    //                 });
-    //             } catch (error) {
-    //                 console.log('Unable to get users by recently played');
-    //                 console.error(error);
-    //             }
-
-    //             return { users };
-    //         }
-    //     }
-    // });
+                return { users };
+            }
+        }
+    });
 
     return server;
 }
