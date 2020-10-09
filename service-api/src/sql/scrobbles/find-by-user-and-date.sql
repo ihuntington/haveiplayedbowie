@@ -1,6 +1,5 @@
-SELECT s.id, s.played_at, t.id AS track_id, t.name AS track_name, t.duration_ms AS track_duration, t.spotify_id
-FROM scrobbles s
-JOIN tracks t ON t.id = s.track_id
-WHERE s.user_id = ${uid}
-AND CAST(s.played_at AS DATE) = ${date}
-ORDER BY s.played_at ASC;
+SELECT scrobbles.id, scrobbles.played_at, track.id AS "track.id", track.name AS "track.name", track.spotify_id AS "track.spotify_id", track.duration_ms AS "track.duration_ms"
+FROM scrobbles
+JOIN tracks track ON track.id = scrobbles.track_id
+$1:raw
+ORDER BY scrobbles.played_at ASC;

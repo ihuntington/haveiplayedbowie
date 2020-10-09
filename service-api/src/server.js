@@ -45,32 +45,7 @@ async function setup() {
 
                 try {
                     const user = await db.users.findByUsername(username);
-
-                    items = await Scrobble.findAll({
-                        attributes: ['id', 'played_at', 'user_id'],
-                        where: {
-                            [Op.and]: [
-                                Sequelize.where(
-                                    Sequelize.cast(Sequelize.col('played_at'), 'date'),
-                                    date
-                                ),
-                                { user_id: user.id }
-                            ]
-                        },
-                        include: [
-                            {
-                                model: Track,
-                                include: {
-                                    model: Artist,
-                                    attributes: ['id', 'name'],
-                                    through: {
-                                        attributes: ['artist_order'],
-                                    },
-                                },
-                            },
-                        ],
-                        order: [['played_at', 'ASC']],
-                    });
+                    items = await db.scrobbles.find({ uid: user.id, date });
                 } catch (e) {
                     console.log("Could not fetch scrobbles for user", username);
                     console.error(e);

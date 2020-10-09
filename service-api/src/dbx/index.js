@@ -1,7 +1,7 @@
 'use strict';
 
 const pgPromise = require('pg-promise');
-const { Users } = require('./repos');
+const { Scrobbles, Users } = require('./repos');
 
 const getConfig = () => {
     const config = {
@@ -20,6 +20,7 @@ const initOptions = {
     // See http://vitaly-t.github.io/pg-promise/global.html#event:extend
     extend(obj) {
         obj.users = new Users(obj, pgp);
+        obj.scrobbles = new Scrobbles(obj, pgp);
     }
 };
 
