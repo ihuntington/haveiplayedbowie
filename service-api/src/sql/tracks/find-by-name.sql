@@ -1,3 +1,3 @@
 SELECT *
 FROM tracks
-WHERE name = ${name}
+WHERE name = $1

@@ -1,7 +1,7 @@
 'use strict';
 
 const pgPromise = require('pg-promise');
-const { Scrobbles, Users } = require('./repos');
+const { Artists, Scrobbles, Tracks, Users } = require('./repos');
 
 const getConfig = () => {
     const config = {
@@ -19,8 +19,10 @@ const initOptions = {
     // Extend the database protocol with own custom repositories
     // See http://vitaly-t.github.io/pg-promise/global.html#event:extend
     extend(obj) {
-        obj.users = new Users(obj, pgp);
+        obj.artists = new Artists(obj, pgp);
         obj.scrobbles = new Scrobbles(obj, pgp);
+        obj.tracks = new Tracks(obj, pgp);
+        obj.users = new Users(obj, pgp);
     }
 };
 

@@ -1,5 +1,5 @@
-SELECT artist_id AS id, artist_order AS order, name, spotify_id
+SELECT artr.artist_id AS id, artr.artist_order AS order, a.name, a.spotify_id
 FROM artists_tracks artr
-JOIN artists ON id = artr.artist_id
+JOIN artists a ON id = artr.artist_id
 WHERE artr.track_id = $1
-ORDER BY artist_order
+ORDER BY artr.artist_order

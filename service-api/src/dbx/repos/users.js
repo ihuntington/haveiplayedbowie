@@ -1,6 +1,6 @@
 'use strict';
 
-const { users: sql } = require('../../sql');
+const sql = require('../../sql');
 
 class UsersRepository{
     constructor(db, pgp) {
@@ -13,7 +13,7 @@ class UsersRepository{
     }
 
     async findById(id) {
-        return this.db.oneOrNone('SELECT * FROM users WHERE id = $1', id);
+        return this.db.one('SELECT * FROM users WHERE id = $1', id);
     }
 
     async findByEmail(email) {
@@ -35,13 +35,17 @@ class UsersRepository{
     }
 
     async findByRecentlyPlayed() {
-        return this.db.any(sql.getByRecentlyPlayed);
+        return this.db.any(sql.users.getByRecentlyPlayed);
     }
 
     async update(id, params) {
         const where = this.pgp.as.format(' WHERE id = $1', id);
         const query = this.pgp.helpers.update(params, null, 'users');
         return this.db.none(query + where);
+    }
+
+    async updateRecentlyPlayed(id) {
+        return this.db.none(sql.users.updateRecentlyPlayed, [id]);
     }
 }
 

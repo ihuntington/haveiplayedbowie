@@ -7,10 +7,91 @@ const transform = (row) => {
     return pathToObject(row);
 };
 
+const compare = (a, b) => {
+    const sortedA = a.slice().sort();
+    const sortedB = b.slice().sort();
+
+    return sortedA.length === sortedB.length && sortedA.every((value, index) => {
+        return value === sortedB[index];
+    });
+};
+
 class ScrobblesRepository {
     constructor(db, pgp) {
         this.db = db;
         this.pgp = pgp;
+    }
+
+    add(uid, item) {
+        return this.db.tx('add-scrobble', async (tx) => {
+            let track;
+            let artists;
+            let scrobble;
+
+            const artistNamesToAdd = item.track.artists.map(({ name }) => name);
+
+            // Find all existing tracks by the track name
+            const existingTracks = await tx.any(sql.tracks.findByName, [item.track.name]);
+
+            // Find all existing artists for each existing track found
+            const existingArtists = await tx.batch(
+                existingTracks.map(({ id }) =>
+                    tx.any(sql.artistsTracks.selectArtistsByTrack, [id])
+                )
+            );
+
+            // Zip the existing tracks and existing artists together
+            const existingArtistsTracks = existingTracks.map((track, index) => ({
+                ...track,
+                artists: existingArtists[index]
+            }));
+
+            const match = existingArtistsTracks.find(({ artists }) => {
+                return compare(artistNamesToAdd, artists.map(({ name }) => name));
+            });
+
+            if (match) {
+                scrobble = await this.findOrCreate({
+                    track_id: match.id,
+                    played_at: item.played_at,
+                    user_id: uid,
+                }, tx);
+
+                return scrobble;
+            }
+
+            track = await this.db.tracks.add({
+                name: item.track.name,
+                duration_ms: item.track.duration_ms,
+                spotify_id: item.track.id,
+            }, tx);
+
+            artists = await tx.batch(
+                item.track.artists.map(({ name, id: spotify_id }) =>
+                    this.db.artists.findOrCreate({ name, spotify_id }, tx)
+                )
+            );
+
+            const artistsTracksToAdd = this.pgp.helpers.insert(
+                artists.map((artist, index) => ({
+                    artist_id: artist.id,
+                    track_id: track.id,
+                    artist_order: index,
+                })),
+                ['artist_id', 'track_id', 'artist_order'],
+                'artists_tracks'
+            );
+
+            await tx.any(artistsTracksToAdd);
+
+            scrobble = await this.findOrCreate({
+                track_id: track.id,
+                played_at: item.played_at,
+                user_id: uid,
+            }, tx);
+
+            return scrobble;
+        });
     }
 
     async findById(id) {
@@ -35,7 +116,7 @@ class ScrobblesRepository {
 
             const artists = await task.batch(
                 scrobbles.map(({ track }) =>
-                    task.any(sql.artistsTracks.selectArtistsByTrack, [track.id])
+                    task.artists.findByTrack(track.id)
                 )
             );
 
@@ -47,6 +128,12 @@ class ScrobblesRepository {
                 },
             }));
         });
+    }
+
+    async findOrCreate(item, context) {
+        const ctx = context || this.db;
+        const record = await ctx.oneOrNone(sql.scrobbles.find, item);
+        return record || await ctx.one(sql.scrobbles.insert, item);
     }
 }
 

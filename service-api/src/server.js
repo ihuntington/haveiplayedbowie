@@ -65,43 +65,51 @@ async function setup() {
         },
     });
 
-    // server.route({
-    //     method: 'POST',
-    //     path: '/scrobbles',
-    //     options: {
-    //         handler: async (request) => {
-    //             const { user, items } = request.payload;
-    //             const scrobbles = [];
+    server.route({
+        method: 'POST',
+        path: '/scrobbles',
+        options: {
+            handler: async (request) => {
+                const { items } = request.payload;
+                const scrobbles = [];
 
-    //             console.log(`Received ${items.length} scrobbles for user ${user}`);
+                let user;
 
-    //             for (const item of items) {
-    //                 const result = await scrobble.insertScrobbleFromSpotify(user, item);
+                try {
+                    user = await db.users.findById(request.payload.user);
+                } catch (err) {
+                    console.log(err);
 
-    //                 scrobbles.push(result);
-    //             }
+                    return Boom.badRequest('User does not exist');
+                }
 
-    //             const success = scrobbles.filter(Boolean);
+                console.log(`Received ${items.length} scrobbles for user ${user.id}`);
 
-    //             console.log(`Successfully inserted ${success.length} of ${items.length} scrobbles received for user ${user}`);
+                for (const item of items) {
+                    try {
+                        const result = await db.scrobbles.add(user.id, item);
+                        scrobbles.push(result.id);
+                    } catch (err) {
+                        console.log(err);
+                        scrobbles.push(null);
+                    }
+                }
 
-    //             try {
-    //                 await User.update({
-    //                     recently_played_at: Sequelize.literal("now()"),
-    //                 }, {
-    //                     where: {
-    //                         id: user,
-    //                     },
-    //                 });
-    //             } catch (err) {
-    //                 console.log(`Unable to update recently_played_at for user ${user}`);
-    //                 console.error(err);
-    //             }
+                const createdScrobbles = scrobbles.filter(Boolean);
 
-    //             return { scrobbles };
-    //         }
-    //     }
-    // });
+                console.log(`Successfully added ${createdScrobbles.length} of ${items.length} scrobbles received for user ${user.id}`);
+
+                try {
+                    db.users.updateRecentlyPlayed(user.id);
+                } catch (err) {
+                    console.log(`Unable to update recently_played_at for user ${user.id}`);
+                    console.error(err);
+                }
+
+                return { items: scrobbles };
+            }
+        }
+    });
 
     server.route({
         method: 'GET',
