@@ -4,9 +4,18 @@ const process = require('process');
 const Hapi = require('@hapi/hapi');
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
+const endOfYear = require('date-fns/endOfYear');
+const formatISO = require('date-fns/formatISO');
+
 const { db } = require('./dbx');
 
 let server;
+
+const getEndOfYear = () => {
+    return formatISO(endOfYear(new Date()), {
+        representation: 'date',
+    });
+};
 
 async function setup() {
 
@@ -15,24 +24,41 @@ async function setup() {
         port: process.env.PORT || 5000,
     });
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/artists/{aid}/summary',
-    //     options: {
-    //         validate: {
-    //             params: Joi.object({
-    //                 aid: Joi.number().required(),
-    //             }),
-    //         },
-    //         handler: async (request, h) => {
-    //             try {
-    //                 return `ok`;
-    //             } catch (err) {
-    //                 console.log(err);
-    //             }
-    //         }
-    //     }
-    // })
+    server.route({
+        method: 'GET',
+        path: '/artists/{aid}/summary',
+        options: {
+            validate: {
+                params: Joi.object({
+                    aid: Joi.number().required(),
+                }),
+                query: Joi.object({
+                    from: Joi.date().iso().required(),
+                    to: Joi.date().iso().max(getEndOfYear()).required(),
+                })
+                .and('from', 'to'),
+            },
+            handler: async (request) => {
+                const { aid } = request.params;
+                const { from, to } = request.query;
+
+                try {
+                    const data = await db.artists.getSummary(aid, from, to);
+
+                    return {
+                        dates: {
+                            from,
+                            to,
+                        },
+                        ...data,
+                    };
+                } catch (err) {
+                    console.log(err);
+                    return Boom.badRequest();
+                }
+            }
+        }
+    })
 
     server.route({
         method: 'GET',

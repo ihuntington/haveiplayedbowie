@@ -12,6 +12,7 @@ module.exports = {
     artists: {
         findByName: sql('artists/find-by-name.sql'),
         findBySpotify: sql('artists/find-by-spotify.sql'),
+        getScrobblesByMonth: sql('artists/scrobbles-by-month.sql'),
         insert: sql('artists/insert.sql'),
     },
     artistsTracks: {
@@ -20,6 +21,8 @@ module.exports = {
     scrobbles: {
         find: sql('scrobbles/find-existing-scrobble.sql'),
         findByUserAndDate: sql('scrobbles/find-by-user-and-date.sql'),
+        getTotalTracksByArtist: sql('scrobbles/get-total-tracks-by-artist.sql'),
+        getTopTracksByArtist: sql('scrobbles/get-top-tracks-by-artist.sql'),
         insert: sql('scrobbles/insert.sql'),
     },
     tracks: {

@@ -1,15 +1,29 @@
 'use strict';
 
-const db = require('../db');
+const process = require('process');
+const Wreck = require('@hapi/wreck');
+const qs = require('query-string');
+const formatISO = require('date-fns/formatISO');
+const startOfYear = require('date-fns/startOfYear');
+const endOfYear = require('date-fns/endOfYear');
 
 async function artist(request, h) {
-    try {
-        // TODO: remove the hard coding when further years added
-        const from = new Date(2019, 0, 1);
-        const to = new Date(2019, 11, 31);
-        const result = await db.getArtistSummary(request.params.artist, from, to);
+    const { SERVICE_API_URL } = process.env;
+    const { from, to } = request.query;
 
-        return h.view('artist', result);
+    const now = new Date();
+    const defaultFrom = startOfYear(now);
+    const defaultTo = endOfYear(now);
+
+    const query = {
+        from: formatISO(from || defaultFrom, { representation: 'date' }),
+        to: formatISO(to || defaultTo, { representation: 'date' }),
+    };
+
+    try {
+        const data = await Wreck.get(`${SERVICE_API_URL}/artists/${request.params.artist}/summary?${qs.stringify(query)}`, { json: true });
+
+        return h.view('artist', data.payload);
     } catch (err) {
         console.log(err);
         return h.response().code(404);
