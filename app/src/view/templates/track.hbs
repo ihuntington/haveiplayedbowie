@@ -1,7 +1,14 @@
 <div>
-    <h2>{{track_name}} by <a href="/artists/{{artist_id}}">{{artist_name}}</a></h2>
+    <h2>{{name}}</h2>
+    <ol>
+        {{#each artists}}
+            <li>
+                <a href="/artists/{{id}}">{{name}}</a>
+            </li>
+        {{/each}}
+    </ol>
     <ul>
-        <li>Duration: {{duration duration}}</li>
-        <li>Total plays: {{total}}</li>
+        <li>Duration: {{duration duration_ms}}</li>
+        {{!-- <li>Total plays: {{total}}</li> --}}
     </ul>
 </div>

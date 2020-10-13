@@ -22,7 +22,7 @@ class ScrobblesRepository {
         this.pgp = pgp;
     }
 
-    add(uid, item) {
+    async add(uid, item) {
         return this.db.tx('add-scrobble', async (tx) => {
             let track;
             let artists;
@@ -105,6 +105,10 @@ class ScrobblesRepository {
             if (uid) {
                 where.push(this.pgp.as.format('scrobbles.user_id = $1', [uid]));
             }
+
+            // if (tid) {
+            //     where.push(this.pgp.as.format('scrobbles.track_id = $1', [tid]));
+            // }
 
             if (date) {
                 where.push(this.pgp.as.format('CAST(scrobbles.played_at AS DATE) = $1', [date]));
