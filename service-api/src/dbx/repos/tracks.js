@@ -25,14 +25,16 @@ class TracksRepository {
 
     async get(id) {
         const data = await this.db.task(async (task) => {
-            const [track, artists] = await task.batch([
+            const [track, artists, total] = await task.batch([
                 this.findById(id, task),
                 this.db.artists.findByTrack(id, task),
+                this.db.scrobbles.total({ track: id }, task),
             ]);
 
             return {
                 ...track,
                 artists,
+                total,
             };
         });
 

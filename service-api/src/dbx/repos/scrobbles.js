@@ -139,6 +139,31 @@ class ScrobblesRepository {
         const record = await ctx.oneOrNone(sql.scrobbles.find, item);
         return record || await ctx.one(sql.scrobbles.insert, item);
     }
+
+    async total({ artist, track, user }, context) {
+        const ctx = context || this.db;
+        let query = 'SELECT count(*) FROM scrobbles';
+
+        if (artist) {
+            query = this.pgp.as.format(`
+                SELECT count(*) AS total FROM scrobbles s
+                JOIN artists_tracks artr ON artr.track_id = s.track_id
+                JOIN artists a ON a.id = artr.artist_id
+                WHERE a.id = $1
+            `, [artist]);
+        }
+
+        if (track) {
+            query = this.pgp.as.format('SELECT count(*) AS total FROM scrobbles WHERE track_id = $1', [track]);
+        }
+
+        if (user) {
+            query = this.pgp.as.format('SELECT count(*) AS total FROM scrobbles WHERE user_id = $1', [user]);
+        }
+
+        const record = await ctx.one(query, [], r => Number(r.total));
+        return record;
+    }
 }
 
 module.exports = ScrobblesRepository;
