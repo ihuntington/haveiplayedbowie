@@ -164,6 +164,41 @@ class ScrobblesRepository {
         const record = await ctx.one(query, [], r => Number(r.total));
         return record;
     }
+
+    async getCharts(from, to) {
+        const [artists, tracks, bowieTracks, bowieTotal] = await this.db.task(task => {
+            const { BOWIE_ARTIST_ID } = process.env;
+            const params = {
+                from,
+                to,
+            };
+            const paramsWithBowie = {
+                ...params,
+                id: BOWIE_ARTIST_ID,
+            };
+
+            const transformTotal = (item) => ({
+                ...item,
+                total: parseInt(item.total, 10),
+            });
+
+            // TODO: MOVE EACH TO THEIR OWN METHOD ON MODEL
+            return task.batch([
+                task.map(sql.scrobbles.getTopArtists, params, transformTotal),
+                // TODO: GET ARTISTS FOR TRACKS
+                task.map(sql.scrobbles.getTopTracks, params, transformTotal),
+                task.map(sql.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
+                task.map(sql.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
+            ]);
+        });
+
+        return {
+            artists,
+            tracks,
+            bowieTracks,
+            bowieTotal,
+        };
+    }
 }
 
 module.exports = ScrobblesRepository;

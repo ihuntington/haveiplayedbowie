@@ -9,6 +9,7 @@ const endOfYear = require('date-fns/endOfYear');
 
 async function artist(request, h) {
     const { SERVICE_API_URL } = process.env;
+    const { artist } = request.params;
     const { from, to } = request.query;
 
     const now = new Date();
@@ -21,7 +22,7 @@ async function artist(request, h) {
     };
 
     try {
-        const data = await Wreck.get(`${SERVICE_API_URL}/artists/${request.params.artist}/summary?${qs.stringify(query)}`, { json: true });
+        const data = await Wreck.get(`${SERVICE_API_URL}/artists/${artist}/summary?${qs.stringify(query)}`, { json: true });
 
         return h.view('artist', data.payload);
     } catch (err) {

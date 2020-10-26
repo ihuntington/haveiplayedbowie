@@ -58,7 +58,48 @@ async function setup() {
                 }
             }
         }
-    })
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/charts',
+        options: {
+            handler: async (request) => {
+                const { year, month } = request.query;
+                const present = new Date();
+
+                let from = new Date(year || present.getUTCFullYear(), 0);
+                let to = new Date(from.getUTCFullYear() + 1, 0);
+                // let datestampFormat = 'yyyy';
+
+                if (month) {
+                    from.setMonth(month > 0 ? month - 1 : 0);
+                    to = new Date(year, from.getMonth() + 1);
+                    // datestampFormat = 'LLLL yyyy';
+                }
+
+                if (from.getUTCFullYear() > present.getUTCFullYear()) {
+                    return h.response().code(400);
+                }
+
+                // const datestamp = format(from, datestampFormat);
+
+                try {
+                    const result = await db.scrobbles.getCharts(from, to);
+                    return result;
+                } catch (err) {
+                    console.error(err);
+                    return Boom.badImplementation();
+                }
+            },
+            validate: {
+                query: Joi.object({
+                    year: Joi.number(),
+                    month: Joi.number(),
+                }),
+            },
+        },
+    });
 
     server.route({
         method: 'GET',

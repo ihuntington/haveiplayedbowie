@@ -1,4 +1,5 @@
-SELECT ar.id AS artist_id, ar.name AS artist_name, COUNT(sc.track_id) AS total FROM scrobbles sc
+SELECT ar.id AS id, ar.name AS name, COUNT(sc.track_id) AS total
+FROM scrobbles sc
 JOIN tracks tr ON tr.id = sc.track_id
 JOIN artists_tracks artr ON artr.track_id = tr.id
 JOIN artists ar ON ar.id = artr.artist_id
