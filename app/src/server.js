@@ -119,6 +119,12 @@ const setup = async () => {
 
     server.route({
         method: 'GET',
+        path: '/charts',
+        handler: routes.charts,
+    });
+
+    server.route({
+        method: 'GET',
         path: '/charts/{year}/{month?}',
         handler: routes.charts,
     });

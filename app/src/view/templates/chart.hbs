@@ -42,7 +42,7 @@
         {{#each artists}}
         <tr>
             <td>
-                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                <a href="/artists/{{this.id}}">{{this.name}}</a>
             </td>
             <td class="chart-table__count">
                 {{this.total}}
@@ -70,14 +70,18 @@
         {{#each tracks}}
         <tr>
             <td>
-                <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                <a href="/tracks/{{this.id}}">{{this.name}}</a>
                 <div class="a11y-when-small">
                     <span>by</span>
-                    <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                    {{#each this.artists}}
+                        <a href="/artists/{{this.id}}">{{this.name}}</a>
+                    {{/each}}
                 </div>
             </td>
             <td>
-                <a href="/artists/{{this.artist_id}}">{{this.artist_name}}</a>
+                {{#each this.artists}}
+                    <a href="/artists/{{this.id}}">{{this.name}}</a>
+                {{/each}}
             </td>
             <td class="chart-table__count">
                 {{this.total}}

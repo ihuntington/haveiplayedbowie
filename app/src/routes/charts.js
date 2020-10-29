@@ -1,34 +1,41 @@
 'use strict';
 
+const process = require('process');
+const qs = require('query-string');
+const Wreck = require('@hapi/wreck');
 const format = require('date-fns/format');
-const db = require('../db');
 
 async function charts(request, h) {
+    const { SERVICE_API_URL } = process.env;
     const present = new Date();
-    const year = request.params.year || present.getUTCFullYear();
 
-    let from = new Date(year, 0);
-    let to = new Date(from.getUTCFullYear() + 1, 0);
+    let { month, year } = request.params;
     let datestampFormat = 'yyyy';
 
-    if (request.params.month) {
-        const month = request.params.month > 0 ? request.params.month - 1 : 0;
-        from.setMonth(month);
-        to = new Date(year, from.getMonth() + 1);
-        datestampFormat = 'LLLL yyyy';
+    if (!year) {
+        year = present.getUTCFullYear();
     }
 
-    if (from.getUTCFullYear() > present.getUTCFullYear()) {
+    const query = { year };
+
+    if (month) {
+        month = month > 0 ? month - 1 : 0;
+        datestampFormat = 'LLLL yyyy';
+        query.month = month;
+    } else {
+        month = 0;
+    }
+
+    if (year > present.getUTCFullYear()) {
         return h.response().code(400);
     }
 
-    let datestamp = format(from, datestampFormat);
-
     try {
-        const result = await db.getSummary(from, to);
+        const url = `${SERVICE_API_URL}/charts?${qs.stringify(query)}`;
+        const { payload } = await Wreck.get(url, { json: true });
         return h.view('chart', {
-            ...result,
-            datestamp,
+            ...payload,
+            datestamp: format(new Date(year, month), datestampFormat),
         });
     } catch (err) {
         return h.response().code(500);

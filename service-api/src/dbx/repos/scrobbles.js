@@ -165,6 +165,26 @@ class ScrobblesRepository {
         return record;
     }
 
+    async getTopTracks(from, to, context) {
+        const ctx = context || this.db;
+        const params = { from, to };
+        // TODO: check if context is a task otherwise use that and not a new one
+        const records = await ctx.task(async (task) => {
+            const tracks = await task.map(sql.scrobbles.getTopTracks, params, transformTotal);
+            const artists = await task.batch(
+                tracks.map(track => task.artists.findByTrack(track.id))
+            );
+            // TODO: an exercise is to get tracks and artists in one SQL query and
+            // then groupby together by track.id
+            return tracks.map((track, index) => ({
+                ...track,
+                artists: artists[index],
+            }));
+        });
+
+        return records;
+    }
+
     async getCharts(from, to) {
         const [artists, tracks, bowieTracks, bowieTotal] = await this.db.task(task => {
             const { BOWIE_ARTIST_ID } = process.env;
@@ -186,7 +206,8 @@ class ScrobblesRepository {
             return task.batch([
                 task.map(sql.scrobbles.getTopArtists, params, transformTotal),
                 // TODO: GET ARTISTS FOR TRACKS
-                task.map(sql.scrobbles.getTopTracks, params, transformTotal),
+                // task.map(sql.scrobbles.getTopTracks, params, transformTotal),
+                task.scrobbles.getTopTracks(from, to, task),
                 task.map(sql.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
                 task.map(sql.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
             ]);
