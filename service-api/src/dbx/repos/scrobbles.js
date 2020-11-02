@@ -149,8 +149,13 @@ class ScrobblesRepository {
         const ctx = context || this.db;
         const select = 'SELECT count(*) FROM scrobbles $(where:raw)';
         const where = [];
+        const startDate = parseISO(process.env.START_DATE);
+        const dates = {
+            from: from || startDate,
+            to: to || new Date(),
+        };
 
-        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
+        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $(from) AND $(to)', dates));
 
         if (artist) {
             where.push(this.pgp.as.format('AND artists.id = $(artist)', { artist }));
