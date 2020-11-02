@@ -41,7 +41,7 @@ class ArtistsRepository {
             const [artist, chart, topTracks] = await task.batch([
                 this.findById(id, task),
                 task.map(sql.artists.getScrobblesByMonth, { ...params, year: from.getFullYear() }, transformTotal),
-                task.map(sql.scrobbles.getTopTracksByArtist, params, transformTotal),
+                task.scrobbles.getTopTracks({ artist: id, from, to }, task),
             ]);
 
             return {

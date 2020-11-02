@@ -2,7 +2,7 @@
     <h2>{{artist.name}}</h2>
     {{#if this.chart}}
     <h3>
-        <span>Listening history by month for 2019</span>
+        <span>Listening history by month for {{year}}</span>
     </h3>
     <table class="chart-table columns-2">
         <thead>
@@ -36,7 +36,7 @@
             {{#each topTracks}}
             <tr>
                 <td>
-                    <a href="/tracks/{{this.track_id}}">{{this.track_name}}</a>
+                    <a href="/tracks/{{this.id}}">{{this.name}}</a>
                 </td>
                 <td class="chart-table__count">
                     {{this.total}}

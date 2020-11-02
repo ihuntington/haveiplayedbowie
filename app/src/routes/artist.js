@@ -24,7 +24,10 @@ async function artist(request, h) {
     try {
         const data = await Wreck.get(`${SERVICE_API_URL}/artists/${artist}/summary?${qs.stringify(query)}`, { json: true });
 
-        return h.view('artist', data.payload);
+        return h.view('artist', {
+            year: now.getUTCFullYear(),
+            ...data.payload,
+        });
     } catch (err) {
         console.log(err);
         return h.response().code(404);
