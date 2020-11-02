@@ -79,7 +79,7 @@ const setup = async () => {
 
     server.route({
         method: 'GET',
-        path: '/users/{username}/diary',
+        path: '/u/{username}/diary',
         config: {
             auth: {
                 strategy: 'session',

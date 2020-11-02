@@ -1,9 +1,9 @@
-SELECT ar.id AS id, ar.name AS name, COUNT(sc.track_id) AS total
-FROM scrobbles sc
-JOIN tracks tr ON tr.id = sc.track_id
-JOIN artists_tracks artr ON artr.track_id = tr.id
-JOIN artists ar ON ar.id = artr.artist_id
-WHERE sc.played_at BETWEEN $(from) AND $(to)
-GROUP BY ar.id, ar.name
+SELECT artists.id AS id, artists.name AS name, COUNT(scrobbles.track_id) AS total
+FROM scrobbles
+JOIN tracks ON tracks.id = scrobbles.track_id
+JOIN artists_tracks ON artists_tracks.track_id = tracks.id
+JOIN artists ON artists.id = artists_tracks.artist_id
+$(where:raw)
+GROUP BY artists.id, artists.name
 ORDER BY total DESC
-LIMIT 10
+LIMIT $(limit)

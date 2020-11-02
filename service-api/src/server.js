@@ -65,27 +65,30 @@ async function setup() {
         path: '/charts',
         options: {
             handler: async (request) => {
-                const { year, month } = request.query;
+                const { year, month, username, limit } = request.query;
                 const present = new Date();
 
                 let from = new Date(year || present.getUTCFullYear(), 0);
                 let to = new Date(from.getUTCFullYear() + 1, 0);
-                // let datestampFormat = 'yyyy';
+
+                const query = { from, to, limit };
 
                 if (month) {
                     from.setMonth(month > 0 ? month - 1 : 0);
-                    to = new Date(year, from.getMonth() + 1);
-                    // datestampFormat = 'LLLL yyyy';
+                    to = new Date(from.getUTCFullYear(), from.getMonth() + 1);
+                    query.to = to;
+                }
+
+                if (username) {
+                    query.username = username;
                 }
 
                 if (from.getUTCFullYear() > present.getUTCFullYear()) {
                     return h.response().code(400);
                 }
 
-                // const datestamp = format(from, datestampFormat);
-
                 try {
-                    const result = await db.scrobbles.getCharts(from, to);
+                    const result = await db.scrobbles.getCharts(query);
                     return result;
                 } catch (err) {
                     console.error(err);
@@ -96,6 +99,105 @@ async function setup() {
                 query: Joi.object({
                     year: Joi.number(),
                     month: Joi.number(),
+                    username: Joi.string().min(2),
+                    limit: Joi.number().min(1).max(50).default(10),
+                }),
+            },
+        },
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/charts/artists',
+        options: {
+            handler: async (request) => {
+                const { year, month, username, limit } = request.query;
+                const present = new Date();
+
+                let from = new Date(year || present.getUTCFullYear(), 0);
+                let to = new Date(from.getUTCFullYear() + 1, 0);
+
+                const query = { from, to, limit };
+
+                if (month) {
+                    from.setMonth(month > 0 ? month - 1 : 0);
+                    to = new Date(from.getUTCFullYear(), from.getMonth() + 1);
+                    query.to = to;
+                }
+
+                if (username) {
+                    query.username = username;
+                }
+
+                if (from.getUTCFullYear() > present.getUTCFullYear()) {
+                    return h.response().code(400);
+                }
+
+                try {
+                    const items = await db.scrobbles.getTopArtists(query);
+                    return { items };
+                } catch (err) {
+                    console.error(err);
+                    return Boom.badImplementation();
+                }
+            },
+            validate: {
+                query: Joi.object({
+                    year: Joi.number(),
+                    month: Joi.number(),
+                    username: Joi.string().min(2),
+                    limit: Joi.number().min(1).max(50).default(10),
+                }),
+            },
+        },
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/charts/tracks',
+        options: {
+            handler: async (request) => {
+                const { artist, year, month, username, limit } = request.query;
+                const present = new Date();
+
+                let from = new Date(year || present.getUTCFullYear(), 0);
+                let to = new Date(from.getUTCFullYear() + 1, 0);
+
+                const query = { from, to, limit };
+
+                if (month) {
+                    from.setMonth(month > 0 ? month - 1 : 0);
+                    to = new Date(from.getUTCFullYear(), from.getMonth() + 1);
+                    query.to = to;
+                }
+
+                if (username) {
+                    query.username = username;
+                }
+
+                if (artist) {
+                    query.artist = artist;
+                }
+
+                if (from.getUTCFullYear() > present.getUTCFullYear()) {
+                    return h.response().code(400);
+                }
+
+                try {
+                    const items = await db.scrobbles.getTopTracks(query);
+                    return { items };
+                } catch (err) {
+                    console.error(err);
+                    return Boom.badImplementation();
+                }
+            },
+            validate: {
+                query: Joi.object({
+                    artist: Joi.number(),
+                    year: Joi.number(),
+                    month: Joi.number(),
+                    username: Joi.string().min(2),
+                    limit: Joi.number().min(1).max(50).default(10),
                 }),
             },
         },

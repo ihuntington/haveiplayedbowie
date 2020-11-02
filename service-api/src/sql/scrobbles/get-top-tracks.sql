@@ -1,7 +1,7 @@
-SELECT tr.id, tr.name, COUNT(sc.track_id) AS total
-FROM scrobbles sc
-JOIN tracks tr ON tr.id = sc.track_id
-WHERE sc.played_at BETWEEN $(from) AND $(to)
-GROUP BY tr.id, tr.name
+SELECT tracks.id AS id, tracks.name AS name, COUNT(scrobbles.track_id) AS total
+FROM scrobbles
+JOIN tracks ON tracks.id = scrobbles.track_id
+$(where:raw)
+GROUP BY tracks.id, tracks.name
 ORDER BY total DESC
-LIMIT 10
+LIMIT $(limit)

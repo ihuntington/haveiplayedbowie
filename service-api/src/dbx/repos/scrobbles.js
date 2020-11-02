@@ -16,6 +16,11 @@ const compare = (a, b) => {
     });
 };
 
+const transformTotal = (item) => ({
+    ...item,
+    total: parseInt(item.total, 10),
+});
+
 class ScrobblesRepository {
     constructor(db, pgp) {
         this.db = db;
@@ -140,37 +145,79 @@ class ScrobblesRepository {
         return record || await ctx.one(sql.scrobbles.insert, item);
     }
 
-    async total({ artist, track, user }, context) {
+    async total({ artist, track, username, from, to }, context) {
         const ctx = context || this.db;
-        let query = 'SELECT count(*) FROM scrobbles';
+        const select = 'SELECT count(*) FROM scrobbles $(where:raw)';
+        const where = [];
+
+        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
 
         if (artist) {
-            query = this.pgp.as.format(`
-                SELECT count(*) AS total FROM scrobbles s
-                JOIN artists_tracks artr ON artr.track_id = s.track_id
-                JOIN artists a ON a.id = artr.artist_id
-                WHERE a.id = $1
-            `, [artist]);
+            where.push(this.pgp.as.format('AND artists.id = $(artist)', { artist }));
+            where.unshift(
+                'JOIN artists_tracks ON artists_tracks.track_id = scrobbles.track_id',
+                'JOIN artists ON artists.id = artists_tracks.artist_id',
+            );
         }
 
         if (track) {
-            query = this.pgp.as.format('SELECT count(*) AS total FROM scrobbles WHERE track_id = $1', [track]);
+            where.push(this.pgp.as.format('AND scrobbles.track_id = $(track)', { track }));
         }
 
-        if (user) {
-            query = this.pgp.as.format('SELECT count(*) AS total FROM scrobbles WHERE user_id = $1', [user]);
+        if (username) {
+            where.push(this.pgp.as.format('AND users.username = $(username)', { username }));
+            where.unshift('JOIN users ON users.id = scrobbles.user_id');
         }
 
-        const record = await ctx.one(query, [], r => Number(r.total));
+        const record = await ctx.one(select, { where: where.join(' ') }, r => Number(r.count));
         return record;
     }
 
-    async getTopTracks(from, to, context) {
+    async getTopArtists({ from, to, username, limit = 10 }, context) {
         const ctx = context || this.db;
-        const params = { from, to };
+        const where = [];
+
+        // A date range is always defined and defaults to:
+        // from - start of the current year
+        // to - start of the next year
+        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $1 AND $2', [from, to]));
+
+        if (username) {
+            where.push(this.pgp.as.format('AND users.username = $1', [username]));
+            // If username is defined then the users table must be joined
+            where.unshift('JOIN users ON users.id = scrobbles.user_id');
+        }
+
+        const query = this.pgp.as.format(sql.scrobbles.getTopArtists, { where: where.join(' '), limit });
+
+        const records = await ctx.map(query, [], transformTotal);
+
+        return records;
+    }
+
+    async getTopTracks({ artist, from, to, username, limit = 10 }, context) {
+        const ctx = context || this.db;
+
         // TODO: check if context is a task otherwise use that and not a new one
         const records = await ctx.task(async (task) => {
-            const tracks = await task.map(sql.scrobbles.getTopTracks, params, transformTotal);
+            const where = [];
+
+            where.push(this.pgp.as.format('AND scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
+
+            if (artist) {
+                where.push(this.pgp.as.format('AND artists.id = $(artist)', { artist }));
+                where.unshift(
+                    'JOIN artists_tracks ON artists_tracks.track_id = scrobbles.track_id',
+                    'JOIN artists ON artists.id = artists_tracks.artist_id'
+                );
+            }
+
+            if (username) {
+                where.push(this.pgp.as.format('AND users.username = $(username)', { username }));
+                where.unshift('JOIN users ON users.id = scrobbles.user_id');
+            }
+
+            const tracks = await task.map(sql.scrobbles.getTopTracks, { where: where.join(' '), limit }, transformTotal);
             const artists = await task.batch(
                 tracks.map(track => task.artists.findByTrack(track.id))
             );
@@ -185,31 +232,29 @@ class ScrobblesRepository {
         return records;
     }
 
-    async getCharts(from, to) {
+    async getCharts({ from, to, username, limit = 10 }) {
         const [artists, tracks, bowieTracks, bowieTotal] = await this.db.task(task => {
             const { BOWIE_ARTIST_ID } = process.env;
             const params = {
                 from,
                 to,
+                limit,
             };
+
+            if (username) {
+                params.username = username;
+            }
+
             const paramsWithBowie = {
                 ...params,
-                id: BOWIE_ARTIST_ID,
+                artist: BOWIE_ARTIST_ID,
             };
 
-            const transformTotal = (item) => ({
-                ...item,
-                total: parseInt(item.total, 10),
-            });
-
-            // TODO: MOVE EACH TO THEIR OWN METHOD ON MODEL
             return task.batch([
-                task.map(sql.scrobbles.getTopArtists, params, transformTotal),
-                // TODO: GET ARTISTS FOR TRACKS
-                // task.map(sql.scrobbles.getTopTracks, params, transformTotal),
-                task.scrobbles.getTopTracks(from, to, task),
-                task.map(sql.scrobbles.getTopTracksByArtist, paramsWithBowie, transformTotal),
-                task.map(sql.scrobbles.getTotalTracksByArtist, paramsWithBowie, transformTotal)
+                task.scrobbles.getTopArtists(params, task),
+                task.scrobbles.getTopTracks(params, task),
+                task.scrobbles.getTopTracks(paramsWithBowie, task),
+                task.scrobbles.total(paramsWithBowie, task),
             ]);
         });
 
