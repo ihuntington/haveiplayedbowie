@@ -19,11 +19,11 @@ async function charts(request, h) {
     const query = { year };
 
     if (month) {
-        month = month > 0 ? month - 1 : 0;
+        month = Math.min(Math.max(month, 1), 12);
         datestampFormat = 'LLLL yyyy';
         query.month = month;
     } else {
-        month = 0;
+        month = 1;
     }
 
     if (year > present.getUTCFullYear()) {
@@ -35,7 +35,7 @@ async function charts(request, h) {
         const { payload } = await Wreck.get(url, { json: true });
         return h.view('chart', {
             ...payload,
-            datestamp: format(new Date(year, month), datestampFormat),
+            datestamp: format(new Date(year, month - 1), datestampFormat),
         });
     } catch (err) {
         return h.response().code(500);
