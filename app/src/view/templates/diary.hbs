@@ -40,8 +40,8 @@
                     {{/each}}
                     {{#if this.skipped}}<span class="event-skipped">Skipped</span>{{/if}}
                 </div>
-                {{#if this.track.duration}}
-                <time class="event-duration">{{duration this.track.duration}}</time>
+                {{#if this.track.duration_ms}}
+                <time class="event-duration">{{duration this.track.duration_ms}}</time>
                 {{/if}}
             </div>
             {{/each}}

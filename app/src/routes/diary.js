@@ -107,12 +107,12 @@ function minutesInUnits(minutes) {
     return tens + ones;
 }
 
-function addTrackTimings(track, timezone = 'utc') {
-    const playedAt = utcToZonedTime(new Date(track.played_at), timezone);
+function addTimings(scrobble, timezone = 'utc') {
+    const playedAt = utcToZonedTime(new Date(scrobble.played_at), timezone);
 
     return {
-        ...track,
-        ...getTrackTimings(playedAt, track.track.duration),
+        ...scrobble,
+        ...getTrackTimings(playedAt, scrobble.track.duration_ms),
     };
 }
 
@@ -158,7 +158,7 @@ function createMapFromIntervals(intervals) {
 }
 
 function diary(scrobbles, timezone = 'utc') {
-    const scrobblesWithTimings = scrobbles.map((track) => addTrackTimings(track, timezone)).map(calculateTrackHeight);
+    const scrobblesWithTimings = scrobbles.map((track) => addTimings(track, timezone)).map(calculateTrackHeight);
     const firstDate = head(scrobblesWithTimings).startTime;
     const lastDate = last(scrobblesWithTimings).startTime;
     const intervals = getHourlyIntervals(firstDate, lastDate);
