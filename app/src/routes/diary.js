@@ -10,6 +10,7 @@ const getHours = require('date-fns/getHours');
 const getTime = require('date-fns/getTime');
 const isSameHour = require('date-fns/isSameHour');
 const set = require('date-fns/set');
+const startOfMinute = require('date-fns/startOfMinute');
 const subMilliseconds = require('date-fns/subMilliseconds');
 const { utcToZonedTime } = require('date-fns-tz');
 const { head, last } = require('ramda');
@@ -199,7 +200,6 @@ function diary(scrobbles, timezone = 'utc') {
                 }
 
                 posY = hourHeight + offset;
-
             }
 
             if (!isFirstTrackInHour && endsInSameHour) {
@@ -207,7 +207,8 @@ function diary(scrobbles, timezone = 'utc') {
             }
 
             if (!isFirstTrackInHour && !endsInSameHour) {
-                hourHeight = posY + (differenceInMinutes(nextHour, track.startTime) * TEN_MINUTES_IN_PX);
+                const diff = differenceInMinutes(nextHour, startOfMinute(track.startTime));
+                hourHeight = posY + (diff * TEN_MINUTES_IN_PX);
             }
 
             // Last track in the hour and it ends in the same hour
