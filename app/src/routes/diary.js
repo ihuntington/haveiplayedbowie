@@ -223,8 +223,7 @@ function diary(scrobbles, timezone = 'utc') {
                 }
             }
 
-            // Last track in the hour and it does not end in the next hour
-            // adjust the height of the hour
+            // Last track in the hour and it ends in the same hour
             if (isLastTrackInHour && endsInSameHour) {
                 const diff = differenceInMinutes(nextHour, track.endTime);
                 hourHeight = hourHeight + minutesAsUnits(diff);
