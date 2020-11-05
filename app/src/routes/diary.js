@@ -8,6 +8,7 @@ const differenceInMinutes = require('date-fns/differenceInMinutes');
 const getMinutes = require('date-fns/getMinutes');
 const getHours = require('date-fns/getHours');
 const getTime = require('date-fns/getTime');
+const isSameHour = require('date-fns/isSameHour');
 const set = require('date-fns/set');
 const subMilliseconds = require('date-fns/subMilliseconds');
 const { utcToZonedTime } = require('date-fns-tz');
@@ -92,7 +93,7 @@ function getTrackTimings(playedAt, ms) {
     };
 }
 
-function minutesInUnits(minutes) {
+function minutesAsUnits(minutes) {
     if (minutes === 0) {
         return 0;
     }
@@ -170,9 +171,14 @@ function diary(scrobbles, timezone = 'utc') {
     }
 
     const tr = Object.values(diaryMap).map(({hour, tracks}, rangeIndex, rangeArr) => {
+        const nextHour = addHours(hour, 1);
+
         let hourHeight = TEN_MINUTES_IN_PX * 6;
 
         const items = tracks.map((track, tracksIndex, tracksArr) => {
+            const endsInSameHour = isSameHour(track.startTime, track.endTime);
+            const isLastTrackInHour = tracksIndex + 1 === tracksArr.length;
+
             let posY = 0;
             let previousTrack;
 
@@ -191,10 +197,10 @@ function diary(scrobbles, timezone = 'utc') {
                     const roundedEndTime = addMinutes(previousTrack.startTime, previousTrack.trackHeight);
                     const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, hour);
                     const diff = differenceInMinutes(track.startTime, roundedEndTime);
-                    posY = (previousTrackMinutesInHour * TEN_MINUTES_IN_PX) + minutesInUnits(diff);
+                    posY = (previousTrackMinutesInHour * TEN_MINUTES_IN_PX) + minutesAsUnits(diff);
                     hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 } else {
-                    posY = minutesInUnits(getMinutes(track.startTime));
+                    posY = minutesAsUnits(getMinutes(track.startTime));
                     hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 }
             } else {
@@ -209,21 +215,19 @@ function diary(scrobbles, timezone = 'utc') {
                 }
 
                 posY = hourHeight + offset;
-                hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
+
+                if (endsInSameHour) {
+                    hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
+                } else {
+                    hourHeight = posY + (differenceInMinutes(nextHour, track.startTime) * TEN_MINUTES_IN_PX);
+                }
             }
 
             // Last track in the hour and it does not end in the next hour
             // adjust the height of the hour
-            if (tracksIndex + 1 === tracksArr.length && !track.endsInNextHour) {
-                const roundedEndTime = addMinutes(track.startTime, track.trackHeight);
-                const diff = differenceInMinutes(addHours(hour, 1), roundedEndTime);
-                hourHeight = hourHeight + (minutesInUnits(diff));
-            }
-
-            // Adjust height of the hour row if last track ends in the next hour
-            if (track.endsInNextHour) {
-                const roundedEndTime = addMinutes(track.startTime, track.trackHeight);
-                hourHeight = hourHeight - (getMinutes(roundedEndTime) * TEN_MINUTES_IN_PX);
+            if (isLastTrackInHour && endsInSameHour) {
+                const diff = differenceInMinutes(nextHour, track.endTime);
+                hourHeight = hourHeight + minutesAsUnits(diff);
             }
 
             return {
