@@ -2,9 +2,9 @@
 
 const process = require('process');
 const addHours = require('date-fns/addHours');
-const addMinutes = require('date-fns/addMinutes');
 const addMilliseconds = require('date-fns/addMilliseconds');
 const differenceInMinutes = require('date-fns/differenceInMinutes');
+const eachHourOfInterval = require('date-fns/eachHourOfInterval');
 const getMinutes = require('date-fns/getMinutes');
 const getHours = require('date-fns/getHours');
 const getTime = require('date-fns/getTime');
@@ -18,25 +18,6 @@ const ONE_MINUTE = 60000;
 const TEN_MINUTES_IN_PX = 24;
 const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
 const MIN_TRACK_DURATION_MS = 3 * ONE_MINUTE;
-
-function getHourlyIntervals(dateLeft, dateRight) {
-    if (dateLeft > dateRight) {
-        throw new Error('Date 1 must be a date before Date 2');
-    }
-
-    const start = set(dateLeft, { minutes: 0, seconds: 0, milliseconds: 0 });
-    const end = set(dateRight, { minutes: 0, seconds: 0, milliseconds: 0 });
-    const intervals = [];
-
-    let current = start;
-
-    while (current <= end) {
-        intervals.push(current);
-        current = addHours(current, 1);
-    }
-
-    return intervals;
-}
 
 function getDuration(ms) {
     const minutes = Math.floor((ms / 1000) / 60);
@@ -160,17 +141,22 @@ function createMapFromIntervals(intervals) {
 
 function diary(scrobbles, timezone = 'utc') {
     const scrobblesWithTimings = scrobbles.map((track) => addTimings(track, timezone)).map(calculateTrackHeight);
-    const firstDate = head(scrobblesWithTimings).startTime;
-    const lastDate = last(scrobblesWithTimings).startTime;
-    const intervals = getHourlyIntervals(firstDate, lastDate);
-    const diaryMap = createMapFromIntervals(intervals);
+
+    const firstScrobble = head(scrobblesWithTimings);
+    const lastScrobble = last(scrobblesWithTimings);
+
+    const hourIntervals = eachHourOfInterval({
+        start: addHours(firstScrobble.startTime, -1),
+        end: addHours(lastScrobble.startTime, 1),
+    })
+    const diaryMap = createMapFromIntervals(hourIntervals);
 
     for (const track of scrobblesWithTimings) {
         const hour = getTime(set(track.startTime, { minutes: 0, seconds: 0, milliseconds: 0 }));
         diaryMap[hour].tracks.push(track);
     }
 
-    const tr = Object.values(diaryMap).map(({hour, tracks}, hourIndex, hourArr) => {
+    const tr = Object.values(diaryMap).map(({ hour, tracks }, hourIndex, hourArr) => {
         const nextHour = addHours(hour, 1);
 
         let hourHeight = TEN_MINUTES_IN_PX * 6;
