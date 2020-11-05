@@ -144,8 +144,8 @@ function createMapFromIntervals(intervals) {
 function diary(scrobbles, timezone = 'utc') {
     const scrobblesWithTimings = scrobbles.map((track) => addTimings(track, timezone)).map(calculateTrackHeight);
 
-    const firstScrobble = head(scrobblesWithTimings);
-    const lastScrobble = last(scrobblesWithTimings);
+    const firstScrobble = scrobblesWithTimings[0];
+    const lastScrobble = scrobblesWithTimings[scrobblesWithTimings.length - 1];
 
     const hourIntervals = eachHourOfInterval({
         start: addHours(firstScrobble.startTime, -1),
