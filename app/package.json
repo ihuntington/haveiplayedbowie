@@ -1,6 +1,6 @@
 {
   "name": "haveiplayedbowie",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "",
   "scripts": {
     "start": "env-cmd -f .env.local node src/index.js",
