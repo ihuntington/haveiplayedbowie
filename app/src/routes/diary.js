@@ -14,9 +14,10 @@ const subMilliseconds = require('date-fns/subMilliseconds');
 const { utcToZonedTime } = require('date-fns-tz');
 const { head, last } = require('ramda');
 
+const ONE_MINUTE = 60000;
 const TEN_MINUTES_IN_PX = 24;
 const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
-const MIN_TRACK_DURATION_MS = 3 * 60000;
+const MIN_TRACK_DURATION_MS = 3 * ONE_MINUTE;
 
 function getHourlyIntervals(dateLeft, dateRight) {
     if (dateLeft > dateRight) {
@@ -118,7 +119,6 @@ function addTimings(scrobble, timezone = 'utc') {
 }
 
 function calculateTrackHeight(track, index, arr) {
-    const ONE_MINUTE = 60000;
     const MIN_TRACK_DURATION_IN_MINUTES = 3;
 
     const roundedDuration = Math.round((track.duration.ms / 1000) / 60);
@@ -206,10 +206,7 @@ function diary(scrobbles, timezone = 'utc') {
             } else {
                 let offset = 0;
 
-                if (
-                    previousTrack.duration.ms &&
-                    track.startTime - previousTrack.endTime > 60000
-                ) {
+                if (track.startTime - previousTrack.endTime > ONE_MINUTE) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
                     offset = diff * (TEN_MINUTES_IN_PX / 10);
                 }
