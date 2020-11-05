@@ -13,7 +13,6 @@ const set = require('date-fns/set');
 const startOfMinute = require('date-fns/startOfMinute');
 const subMilliseconds = require('date-fns/subMilliseconds');
 const { utcToZonedTime } = require('date-fns-tz');
-const { head, last } = require('ramda');
 
 const ONE_MINUTE = 60000;
 const TEN_MINUTES_IN_PX = 24;
@@ -175,7 +174,7 @@ function diary(scrobbles, timezone = 'utc') {
                 const previousHour = hourArr[hourIndex - 1];
 
                 if (previousHour.tracks.length) {
-                    previousTrack = last(previousHour.tracks);
+                    previousTrack = previousHour.tracks[previousHour.tracks.length - 1];
                 }
             } else {
                 previousTrack = tracksArr[trackIndex - 1];
