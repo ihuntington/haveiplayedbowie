@@ -7,7 +7,7 @@ const Boom = require('@hapi/boom');
 const endOfYear = require('date-fns/endOfYear');
 const formatISO = require('date-fns/formatISO');
 
-const { db } = require('./dbx');
+const { db } = require('./db');
 
 let server;
 
