@@ -4,7 +4,6 @@ Sometime in mid-June or July 2019 when at work I wondered whether I had listened
 
 If you'd like to use / see the previous version look through the history.
 
-- Only tracks from 2019 are available
-- Data has been scraped from Last.fm using [scropple-puppet](https://github.com/ihuntington/scropple-puppet)
+- 2019 data has been scraped from Last.fm using [scropple-puppet](https://github.com/ihuntington/scropple-puppet)
 
 Very much a work in progress.
