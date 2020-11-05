@@ -170,33 +170,34 @@ function diary(scrobbles, timezone = 'utc') {
         diaryMap[hour].tracks.push(track);
     }
 
-    const tr = Object.values(diaryMap).map(({hour, tracks}, rangeIndex, rangeArr) => {
+    const tr = Object.values(diaryMap).map(({hour, tracks}, hourIndex, hourArr) => {
         const nextHour = addHours(hour, 1);
 
         let hourHeight = TEN_MINUTES_IN_PX * 6;
 
-        const items = tracks.map((track, tracksIndex, tracksArr) => {
+        const items = tracks.map((track, trackIndex, tracksArr) => {
             const endsInSameHour = isSameHour(track.startTime, track.endTime);
-            const isLastTrackInHour = tracksIndex + 1 === tracksArr.length;
+            const isFirstTrackInHour = trackIndex === 0;
+            const isLastTrackInHour = trackIndex + 1 === tracksArr.length;
 
             let posY = 0;
             let previousTrack;
 
-            if (tracksIndex === 0 && rangeIndex > 0) {
-                const previousHour = rangeArr[rangeIndex - 1];
+            if (isFirstTrackInHour && hourIndex > 0) {
+                const previousHour = hourArr[hourIndex - 1];
 
                 if (previousHour.tracks.length) {
                     previousTrack = last(previousHour.tracks);
                 }
             } else {
-                previousTrack = tracksArr[tracksIndex - 1];
+                previousTrack = tracksArr[trackIndex - 1];
             }
 
-            if (tracksIndex === 0) {
+            if (isFirstTrackInHour) {
                 if (previousTrack && previousTrack.endsInNextHour) {
-                    const roundedEndTime = addMinutes(previousTrack.startTime, previousTrack.trackHeight);
-                    const previousTrackMinutesInHour = differenceInMinutes(roundedEndTime, hour);
-                    const diff = differenceInMinutes(track.startTime, roundedEndTime);
+                    const previousTrackMinutesInHour = differenceInMinutes(previousTrack.endTime, hour);
+                    const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
+
                     posY = (previousTrackMinutesInHour * TEN_MINUTES_IN_PX) + minutesAsUnits(diff);
                     hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 } else {
@@ -213,11 +214,14 @@ function diary(scrobbles, timezone = 'utc') {
 
                 posY = hourHeight + offset;
 
-                if (endsInSameHour) {
-                    hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
-                } else {
-                    hourHeight = posY + (differenceInMinutes(nextHour, track.startTime) * TEN_MINUTES_IN_PX);
-                }
+            }
+
+            if (!isFirstTrackInHour && endsInSameHour) {
+                hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
+            }
+
+            if (!isFirstTrackInHour && !endsInSameHour) {
+                hourHeight = posY + (differenceInMinutes(nextHour, track.startTime) * TEN_MINUTES_IN_PX);
             }
 
             // Last track in the hour and it ends in the same hour
