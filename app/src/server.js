@@ -3,7 +3,7 @@
 const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 
 const routes = require('./routes');
 const { sessionValidator } = require('./validators/session');
