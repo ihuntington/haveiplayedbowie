@@ -102,13 +102,14 @@ function addTimings(scrobble, timezone = 'utc') {
 
 function calculateTrackHeight(track, index, arr) {
     const MIN_TRACK_DURATION_IN_MINUTES = 3;
+    const isLastTrack = index + 1 === arr.length;
 
     const roundedDuration = Math.round((track.duration.ms / 1000) / 60);
 
     let skipped = false;
     let trackHeight = Math.max(MIN_TRACK_DURATION_IN_MINUTES, roundedDuration);
 
-    if (index + 1 !== arr.length) {
+    if (!isLastTrack) {
         const nextTrack = arr[index + 1];
         const difference = nextTrack.startTime - track.endTime;
 
