@@ -81,11 +81,11 @@ function minutesAsUnits(minutes) {
     }
 
     if (minutes < 10) {
-        return minutes * (TEN_MINUTES_IN_PX / 10);
+        return minutes * (TEN_MINUTES_IN_PX / 8);
     }
 
     const tens = Math.floor(minutes / 10) * TEN_MINUTES_IN_PX;
-    const ones = (minutes % 10) * (TEN_MINUTES_IN_PX / 10);
+    const ones = (minutes % 10) * (TEN_MINUTES_IN_PX / 8);
 
     return tens + ones;
 }
@@ -189,14 +189,20 @@ function diary(scrobbles, timezone = 'utc') {
                     hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
                 } else {
                     posY = minutesAsUnits(getMinutes(track.startTime));
-                    hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
+
+                    if (endsInSameHour) {
+                        hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
+                    } else {
+                        const diff = differenceInMinutes(nextHour, startOfMinute(track.startTime));
+                        hourHeight = posY + (diff * TEN_MINUTES_IN_PX);
+                    }
                 }
             } else {
                 let offset = 0;
 
                 if (track.startTime - previousTrack.endTime > ONE_MINUTE) {
                     const diff = differenceInMinutes(track.startTime, previousTrack.endTime);
-                    offset = diff * (TEN_MINUTES_IN_PX / 10);
+                    offset = diff * (TEN_MINUTES_IN_PX / 8);
                 }
 
                 posY = hourHeight + offset;
@@ -206,7 +212,7 @@ function diary(scrobbles, timezone = 'utc') {
                 hourHeight = posY + (track.trackHeight * TEN_MINUTES_IN_PX);
             }
 
-            if (!isFirstTrackInHour && !endsInSameHour) {
+            if (isLastTrackInHour && !endsInSameHour) {
                 const diff = differenceInMinutes(nextHour, startOfMinute(track.startTime));
                 hourHeight = posY + (diff * TEN_MINUTES_IN_PX);
             }
