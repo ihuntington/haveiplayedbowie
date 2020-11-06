@@ -2,7 +2,7 @@
 
 const process = require('process');
 const Hapi = require('@hapi/hapi');
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const endOfYear = require('date-fns/endOfYear');
 const formatISO = require('date-fns/formatISO');
