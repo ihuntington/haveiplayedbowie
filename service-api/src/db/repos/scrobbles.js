@@ -150,7 +150,7 @@ class ScrobblesRepository {
         const ctx = context || this.db;
         const select = 'SELECT count(*) FROM scrobbles $(where:raw)';
         const where = [];
-        const startDate = parseISO(process.env.START_DATE);
+        const startDate = parseISO(process.env.PROJECT_START_DATE);
         const dates = {
             from: from || startDate,
             to: to || new Date(),
