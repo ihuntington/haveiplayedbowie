@@ -205,6 +205,77 @@ async function setup() {
 
     server.route({
         method: 'GET',
+        path: '/scrobbles/duration',
+        options: {
+            handler: async (req) => {
+                const { date, period } = req.query;
+                const allowedPeriod = ['year', 'month', 'week', 'day'];
+
+                if (period && !allowedPeriod.includes(period)) {
+                    return Boom.badRequest(`Truncate must be one of ${allowedPeriod.join(', ')}`);
+                }
+
+                try {
+                    const duration = await db.scrobbles.getTotalDurationByDate({ ...req.query, date, period });
+                    return { duration };
+                } catch (err) {
+                    console.log('Could not get scrobbles duration');
+                    console.error(err);
+                    return Boom.badImplementation();
+                }
+            },
+            validate: {
+                query: Joi.object({
+                    date: Joi.date().iso().default(formatISO(new Date(), { representation: 'date' })),
+                    period: Joi.string().default('day'),
+                    username: Joi.string().min(2).max(50),
+                })
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/scrobbles/count',
+        options: {
+            handler: async (req) => {
+                const { column, truncate } = req.query;
+                const allowedColumns = ['artist', 'track'];
+                const allowedTruncate = ['year', 'month', 'week', 'day'];
+
+                if (column && !allowedColumns.includes(column)) {
+                    return Boom.badRequest(`Column must be one of ${allowedColumns.join(', ')}`);
+                }
+
+                if (truncate && !allowedTruncate.includes(truncate)) {
+                    return Boom.badRequest(`Truncate must be one of ${allowedTruncate.join(', ')}`);
+                }
+
+                try {
+                    const total = await db.scrobbles.total({ ...req.query, column, truncate });
+                    return { total };
+                } catch (error) {
+                    console.log('Could not get scrobbles.total');
+                    console.error(error);
+                    return Boom.badImplementation();
+                }
+            },
+            validate: {
+                query: Joi.object({
+                    column: Joi.string(),
+                    distinct: Joi.boolean(),
+                    from: Joi.date().iso(),
+                    to: Joi.date().iso(),
+                    date: Joi.date().iso(),
+                    truncate: Joi.string(),
+                    username: Joi.string().min(2).max(50),
+                }).without('date', ['from', 'to']).and('date', 'truncate').and('from', 'to'),
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/scrobbles',
         options: {
             handler: async (request) => {

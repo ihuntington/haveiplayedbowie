@@ -1,6 +1,10 @@
 'use strict';
 
 const parseISO = require('date-fns/parseISO');
+const startOfYear = require('date-fns/startOfYear');
+const startOfMonth = require('date-fns/startOfMonth');
+const startOfWeek = require('date-fns/startOfWeek');
+
 const sql = require('../../sql');
 const { pathToObject } = require('../../utils');
 
@@ -21,6 +25,22 @@ const transformTotal = (item) => ({
     ...item,
     total: parseInt(item.total, 10),
 });
+
+const getTruncatedDate = (date, truncate) => {
+    if (truncate === 'year') {
+        return startOfYear(date);
+    }
+
+    if (truncate === 'month') {
+        return startOfMonth(date);
+    }
+
+    if (truncate === 'week') {
+        return startOfWeek(date, { weekStartsOn: 1 });
+    }
+
+    return date;
+}
 
 class ScrobblesRepository {
     constructor(db, pgp) {
@@ -146,20 +166,39 @@ class ScrobblesRepository {
         return record || await ctx.one(sql.scrobbles.insert, item);
     }
 
-    async total({ artist, track, username, from, to }, context) {
+    async total({ artist, column = 'all', distinct = false, date, track, username, from, to, truncate }, context) {
         const ctx = context || this.db;
-        const select = 'SELECT count(*) FROM scrobbles $(where:raw)';
+        const select = 'SELECT count($(count:value)) FROM scrobbles';
         const where = [];
-        const startDate = parseISO(process.env.PROJECT_START_DATE);
-        const dates = {
-            from: from || startDate,
-            to: to || new Date(),
+        const columns = {
+            all: '*',
+            artist: 'artists_tracks.artist_id',
+            track: 'scrobbles.track_id',
         };
+        // const startDate = parseISO(process.env.PROJECT_START_DATE);
 
-        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $(from) AND $(to)', dates));
+        if (from && to) {
+            // TODO: should probably compare from is not before startDate
+            const dates = {
+                from,
+                to,
+            };
+
+            where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $(from) AND $(to)', dates));
+        }
+
+        if (date && truncate) {
+            where.push(this.pgp.as.format('WHERE cast(date_trunc($(truncate), scrobbles.played_at) AS DATE) = $(date)', {
+                date: getTruncatedDate(date, truncate),
+                truncate,
+            }));
+        }
 
         if (artist) {
             where.push(this.pgp.as.format('AND artists.id = $(artist)', { artist }));
+        }
+
+        if (artist || column === 'artist') {
             where.unshift(
                 'JOIN artists_tracks ON artists_tracks.track_id = scrobbles.track_id',
                 'JOIN artists ON artists.id = artists_tracks.artist_id',
@@ -175,7 +214,14 @@ class ScrobblesRepository {
             where.unshift('JOIN users ON users.id = scrobbles.user_id');
         }
 
-        const record = await ctx.one(select, { where: where.join(' ') }, r => Number(r.count));
+        const distinctSelect = this.pgp.as.format(select, {
+            count: distinct ? ['distinct', columns[column]].join(' ') : columns[column],
+        });
+
+        const query = this.pgp.as.format(distinctSelect + ' $(where:raw)', { where: where.join(' ') });
+
+        const record = await ctx.one(query, null, r => Number(r.count));
+
         return record;
     }
 
@@ -270,6 +316,29 @@ class ScrobblesRepository {
             bowieTracks,
             bowieTotal,
         };
+    }
+
+    async getTotalDurationByDate({ date, period = 'day', username }) {
+        const select = `
+            SELECT sum(tracks.duration_ms) AS duration FROM scrobbles
+            JOIN tracks ON tracks.id = scrobbles.track_id
+            JOIN users ON users.id = scrobbles.user_id
+        `;
+        const where = [
+            'WHERE date_trunc($(period), scrobbles.played_at) = cast($(date) AS DATE)',
+        ];
+
+        if (username) {
+            where.push(this.pgp.as.format('AND users.username = $(username)', { username }));
+        }
+
+        const query = select + ` ${where.join(' ')}`;
+
+        return this.db.one(query, {
+            date: getTruncatedDate(date),
+            period,
+            username,
+         }, (row) => Number(row.duration));
     }
 }
 
