@@ -8,7 +8,8 @@
     <body>
         <header class="site-header">
             <a href="/">
-                <h1 class="site-name">Have I Played Bowie Today?</h1>
+                <h1 class="site-name screen-reader">Have I Played Bowie Today?</h1>
+                <span class="site-logo"></span>
             </a>
             <nav class="site-nav">
                 {{#if auth.isAuthenticated}}
@@ -21,10 +22,10 @@
                 {{/if}}
             </nav>
         </header>
-        <main>
+        <main class="site-body">
             {{{content}}}
         </main>
-        <footer>
+        <footer class="site-footer">
             <p>Made by <a href="https://www.ianhuntington.co.uk">Ian Huntington</a>. Listening history is liberated from <a href="https://www.last.fm/user/bobbyparkhurst">Last.fm</a> with additional track and artist details from Spotify.</p>
         </footer>
     </body>

@@ -4,7 +4,9 @@ const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const Joi = require('joi');
+const formatISO = require('date-fns/formatISO');
 
+const services = require('./services');
 const routes = require('./routes');
 const { sessionValidator } = require('./validators/session');
 
@@ -209,18 +211,35 @@ const setup = async () => {
                 strategy: 'session',
                 mode: 'optional',
             },
-            handler: (request, h) => {
+            handler: async (request, h) => {
+                const today = formatISO(new Date(), { representation: 'date' });
+                const periods = ['day', 'week', 'month', 'year'];
+                const tracks = await Promise.all(periods.map(period => {
+                    return services.scrobbles.getTotalByDate({
+                        column: 'track',
+                        date: today,
+                        period,
+                    });
+                }));
+
                 if (request.auth.isAuthenticated) {
                     return h.view('index', {
                         auth: {
                             isAuthenticated: true,
                             name: request.auth.credentials.profile.displayName,
                             username: request.auth.credentials.username,
+                        },
+                        totals: {
+                            tracks,
                         }
                     });
                 }
 
-                return h.view('index');
+                return h.view('index', {
+                    totals: {
+                        tracks,
+                    }
+                });
             }
         },
     });

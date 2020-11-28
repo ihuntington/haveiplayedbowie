@@ -4,6 +4,9 @@ const process = require('process');
 const Hapi = require('@hapi/hapi');
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
+const startOfYear = require('date-fns/startOfYear');
+const startOfMonth = require('date-fns/startOfMonth');
+const startOfWeek = require('date-fns/startOfWeek');
 const endOfYear = require('date-fns/endOfYear');
 const formatISO = require('date-fns/formatISO');
 
@@ -15,6 +18,22 @@ const getEndOfYear = () => {
     return formatISO(endOfYear(new Date()), {
         representation: 'date',
     });
+};
+
+const getTruncatedDate = (date, period) => {
+    if (period === 'year') {
+        return startOfYear(date);
+    }
+
+    if (period === 'month') {
+        return startOfMonth(date);
+    }
+
+    if (period === 'week') {
+        return startOfWeek(date, { weekStartsOn: 1 });
+    }
+
+    return date;
 };
 
 async function setup() {
@@ -215,9 +234,19 @@ async function setup() {
                     return Boom.badRequest(`Truncate must be one of ${allowedPeriod.join(', ')}`);
                 }
 
+                const query = {
+                    ...req.query,
+                    date: getTruncatedDate(date, period),
+                    period,
+                };
+
                 try {
-                    const duration = await db.scrobbles.getTotalDurationByDate({ ...req.query, date, period });
-                    return { duration };
+                    const duration = await db.scrobbles.getTotalDurationByDate(query);
+                    return {
+                        duration,
+                        date: getTruncatedDate(date, period),
+                        period,
+                    };
                 } catch (err) {
                     console.log('Could not get scrobbles duration');
                     console.error(err);
@@ -239,7 +268,7 @@ async function setup() {
         path: '/scrobbles/count',
         options: {
             handler: async (req) => {
-                const { column, truncate } = req.query;
+                const { column, date, truncate } = req.query;
                 const allowedColumns = ['artist', 'track'];
                 const allowedTruncate = ['year', 'month', 'week', 'day'];
 
@@ -251,9 +280,20 @@ async function setup() {
                     return Boom.badRequest(`Truncate must be one of ${allowedTruncate.join(', ')}`);
                 }
 
+                const query = {
+                    ...req.query,
+                    column,
+                    truncate,
+                    ...(date && { date: getTruncatedDate(date, truncate) }),
+                }
+
                 try {
-                    const total = await db.scrobbles.total({ ...req.query, column, truncate });
-                    return { total };
+                    const total = await db.scrobbles.total(query);
+                    return {
+                        total,
+                        ...(date && { date: getTruncatedDate(date, truncate )}),
+                        ...(truncate && { period: truncate }),
+                    };
                 } catch (error) {
                     console.log('Could not get scrobbles.total');
                     console.error(error);

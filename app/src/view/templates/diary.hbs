@@ -1,13 +1,5 @@
-<div>
-    <h2>{{calendar-date this.date}}</h2>
-    {{#if hasBowie}}
-        <p><em>Yes!</em> I've had my Bowie fix.</p>
-    {{/if}}
-    {{#unless hasBowie}}
-        <p><em>No!</em> I forgot all about David.</p>
-    {{/unless}}
-
-    <ul>
+<div class="layout-diary">
+    <ul class="diary-pagination">
         {{#if links.previous}}
         <li>
             <a href="{{links.previous}}">Previous day</a>
@@ -19,6 +11,15 @@
         </li>
         {{/if}}
     </ul>
+
+    <h2 class="heading-2">{{calendar-date this.date}}</h2>
+
+    {{#if hasBowie}}
+        <p><em>Yes!</em> I've had my Bowie fix.</p>
+    {{/if}}
+    {{#unless hasBowie}}
+        <p><em>No!</em> I forgot all about David.</p>
+    {{/unless}}
 
     {{#if items}}
     <div class="container">

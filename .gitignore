@@ -3,3 +3,4 @@ env.yaml
 .env*
 dump
 notes
+*:Zone.Identifier

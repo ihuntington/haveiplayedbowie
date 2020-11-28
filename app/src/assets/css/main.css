@@ -1,14 +1,54 @@
 :root {
+    --colour-grey-light: hsl(0, 0%, 93.3%);
+    --colour-pink-medium: hsl(318, 58.3%, 47.1%);
+    --colour-blue-medium: hsl(202.3, 58.3%, 47.1%);
     --card-unit-height: 24px;
+    --logo-radius: 32px;
     --event-unit-height: calc(1rem * 12);
 }
 
+@font-face {
+    font-family: 'Inter var';
+    font-weight: 100 900;
+    font-display: swap;
+    font-style: normal;
+    font-named-instance: 'Regular';
+    src: url("/assets/fonts/Inter-roman.var.woff2?v=3.15") format("woff2");
+}
+
+@font-face {
+font-family: 'Inter var';
+font-weight: 100 900;
+font-display: swap;
+font-style: italic;
+font-named-instance: 'Italic';
+src: url("/assets/fonts/Inter-italic.var.woff2?v=3.15") format("woff2");
+}
+
+html {
+    font-family: 'Inter', sans-serif;
+}
+
+@supports (font-variation-settings: normal) {
+    html {
+        font-family: 'Inter var', sans-serif;
+    }
+}
+
 body {
-    background: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: var(--colour-grey-light);
     font-weight: normal;
     font-style: normal;
     line-height: 1.5;
+    margin: 0;
+}
+
+.screen-reader {
+    clip: rect(1px, 1px, 1px, 1px);
+    height: 1px;
+    overflow: hidden;
+    position: absolute !important;
+    width: 1px;
 }
 
 a {
@@ -49,6 +89,15 @@ li {
     padding: .5rem 1rem;
 }
 
+.site-logo {
+    background: var(--colour-pink-medium);
+    border-radius: 9999px;
+    display: inline-block;
+    margin: 16px;
+    height: calc(2* var(--logo-radius));
+    width: calc(2 * var(--logo-radius));
+}
+
 .site-nav {
     border-bottom: 1px solid hsl(0, 0%, 2.7%);
     padding: .5rem 0;
@@ -56,6 +105,8 @@ li {
 
 .site-nav a {
     display: inline-block;
+    font-size: 18px;
+    font-weight: 400;
     margin: 0 .5rem;
     padding: .125rem;
 }
@@ -79,9 +130,22 @@ li {
     }
 }
 
+.site-body {
+    margin: 0 1rem;
+}
+
+.site-footer {
+    border-top: 2px solid black;
+    margin: 3rem 1rem 1rem;
+}
+
 h2 {
     font-size: 2rem;
     font-weight: 500;
+}
+
+.heading-2 {
+    font-size: 1.25rem;
 }
 
 h3 {
@@ -129,8 +193,8 @@ h3 span {
     font-weight: 600;
 }
 
-.chart-table tr:nth-child(odd) td {
-    background: hsl(0, 0%, 95%);
+.chart-table tr:nth-child(even) td {
+    background: hsla(0, 0%, 0%, 0.1);
 }
 
 .columns-3 thead th:nth-child(2),
@@ -147,7 +211,7 @@ h3 span {
 }
 
 .event {
-    background: hsl(149, 60.8%, 90%);
+    background: hsl(255, 100%, 100%);
     display: grid;
     grid-area: events;
     grid-template-rows: auto 1rem;
@@ -180,8 +244,10 @@ h3 span {
 
 .event-time {
     background: hsl(149, 60%, 70%);
-    left: -2.625rem;
-    padding: 0 2px;
+    font-feature-settings: 'kern' 1, 'tnum' 1;
+    font-size: 14px;
+    left: -44px;
+    padding: 2px 2px 0;
     position: absolute;
     top: 0;
 }
@@ -204,6 +270,10 @@ h3 span {
     width: 100%;
 }
 
+.hour-time {
+    font-feature-settings: 'kern' 1, 'tnum' 1;
+}
+
 .event-duration {
     align-self: flex-end;
     display: inline-block;
@@ -216,11 +286,13 @@ h3 span {
 .event-track-name,
 .event-artist-name {
     display: inline-block;
+    font-weight: 600;
     white-space: nowrap;
 }
 
 .event-artist-name {
     font-size: 0.875rem;
+    font-weight: 400;
 }
 
 .separator {
@@ -298,6 +370,36 @@ h3 span {
     font-size: 1rem;
     line-height: 1.5;
     padding: .5rem 1rem;
+}
+
+.dashboard {
+    display: grid;
+    gap: 1rem;
+}
+
+.dashboard-card {
+    border: 3px solid hsla(0, 0%, 0%, 1);
+    border-radius: 8px;
+    display: block;
+    padding: 1rem;
+}
+
+.dashboard-value {
+    color: var(--colour-blue-medium);
+    display: block;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.dashboard-content {
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.diary-pagination {
+    display: flex;
+    justify-content: space-between;;
 }
 
 @media (min-width: 32rem) {
