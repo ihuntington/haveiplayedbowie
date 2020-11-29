@@ -231,7 +231,7 @@ async function setup() {
                 const allowedPeriod = ['year', 'month', 'week', 'day'];
 
                 if (period && !allowedPeriod.includes(period)) {
-                    return Boom.badRequest(`Truncate must be one of ${allowedPeriod.join(', ')}`);
+                    return Boom.badRequest(`Period must be one of ${allowedPeriod.join(', ')}`);
                 }
 
                 const query = {
