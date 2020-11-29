@@ -15,5 +15,17 @@
             </span>
         </div>
     {{/each}}
+    {{#each totals.durations}}
+        <div class="dashboard-card">
+            <span class="dashboard-value">{{readable-duration this.duration}}</span>
+            <span class="dashboard-content">
+                listened to
+                {{#if (eq this.period "day")}}today{{/if}}
+                {{#if (eq this.period "week")}}this week{{/if}}
+                {{#if (eq this.period "month")}}this month{{/if}}
+                {{#if (eq this.period "year")}}this year{{/if}}
+            </span>
+        </div>
+    {{/each}}
     </div>
 </div>

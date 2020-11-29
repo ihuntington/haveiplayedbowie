@@ -214,10 +214,18 @@ const setup = async () => {
             handler: async (request, h) => {
                 const today = formatISO(new Date(), { representation: 'date' });
                 const periods = ['day', 'week', 'month', 'year'];
+
                 const tracks = await Promise.all(periods.map(period => {
                     return services.scrobbles.getTotalByDate({
                         column: 'track',
                         date: today,
+                        period,
+                    });
+                }));
+
+                const durations = await Promise.all(periods.map(period => {
+                    return services.scrobbles.getDurationByPeriod({
+                        date: formatISO(new Date(), { representation: 'date' }),
                         period,
                     });
                 }));
@@ -230,6 +238,7 @@ const setup = async () => {
                             username: request.auth.credentials.username,
                         },
                         totals: {
+                            durations,
                             tracks,
                         }
                     });
@@ -237,6 +246,7 @@ const setup = async () => {
 
                 return h.view('index', {
                     totals: {
+                        durations,
                         tracks,
                     }
                 });
