@@ -4,14 +4,15 @@ const process = require('process');
 const Wreck = require('@hapi/wreck');
 const qs = require('query-string');
 
-const getTotalByDate = async ({ column, date, distinct = false, period, username }) => {
+const getTotalByDate = async ({ column, date, distinct = false, period, username, artist }) => {
     const { SERVICE_API_URL } = process.env;
     const query = qs.stringify({
         column,
         date,
         distinct,
-        truncate: period,
+        period,
         ...(username && { username }),
+        ...(artist && { artist }),
     });
 
     try {

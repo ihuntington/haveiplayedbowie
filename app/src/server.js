@@ -230,6 +230,14 @@ const setup = async () => {
                     });
                 }));
 
+                const bowie = await Promise.all(periods.map(period => {
+                    return services.scrobbles.getTotalByDate({
+                        artist: process.env.BOWIE_ARTIST_ID,
+                        date: today,
+                        period,
+                    });
+                }));
+
                 if (request.auth.isAuthenticated) {
                     return h.view('index', {
                         auth: {
@@ -240,6 +248,7 @@ const setup = async () => {
                         totals: {
                             durations,
                             tracks,
+                            bowie,
                         }
                     });
                 }
@@ -248,6 +257,7 @@ const setup = async () => {
                     totals: {
                         durations,
                         tracks,
+                        bowie,
                     }
                 });
             }

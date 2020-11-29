@@ -268,31 +268,31 @@ async function setup() {
         path: '/scrobbles/count',
         options: {
             handler: async (req) => {
-                const { column, date, truncate } = req.query;
+                const { column, date, period } = req.query;
                 const allowedColumns = ['artist', 'track'];
-                const allowedTruncate = ['year', 'month', 'week', 'day'];
+                const allowedPeriods = ['year', 'month', 'week', 'day'];
 
                 if (column && !allowedColumns.includes(column)) {
                     return Boom.badRequest(`Column must be one of ${allowedColumns.join(', ')}`);
                 }
 
-                if (truncate && !allowedTruncate.includes(truncate)) {
-                    return Boom.badRequest(`Truncate must be one of ${allowedTruncate.join(', ')}`);
+                if (period && !allowedPeriods.includes(period)) {
+                    return Boom.badRequest(`Period must be one of ${allowedPeriods.join(', ')}`);
                 }
 
                 const query = {
                     ...req.query,
                     column,
-                    truncate,
-                    ...(date && { date: getTruncatedDate(date, truncate) }),
+                    truncate: period,
+                    ...(date && { date: getTruncatedDate(date, period) }),
                 }
 
                 try {
                     const total = await db.scrobbles.total(query);
                     return {
                         total,
-                        ...(date && { date: getTruncatedDate(date, truncate )}),
-                        ...(truncate && { period: truncate }),
+                        ...(date && { date: getTruncatedDate(date, period )}),
+                        ...(period && { period }),
                     };
                 } catch (error) {
                     console.log('Could not get scrobbles.total');
@@ -302,14 +302,16 @@ async function setup() {
             },
             validate: {
                 query: Joi.object({
+                    artist: Joi.number(),
                     column: Joi.string(),
                     distinct: Joi.boolean(),
                     from: Joi.date().iso(),
                     to: Joi.date().iso(),
                     date: Joi.date().iso(),
-                    truncate: Joi.string(),
+                    period: Joi.string(),
                     username: Joi.string().min(2).max(50),
-                }).without('date', ['from', 'to']).and('date', 'truncate').and('from', 'to'),
+                })
+                .without('date', ['from', 'to']).and('date', 'period').and('from', 'to'),
             }
         }
     });
