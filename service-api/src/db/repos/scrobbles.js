@@ -247,29 +247,47 @@ class ScrobblesRepository {
         return records;
     }
 
-    async getTopTracks({ artist, from, to, username, limit = 10 }, context) {
+    async getTopTracks({ artist, date, from, to, period, username, limit = 10 }, context) {
         const ctx = context || this.db;
 
         // TODO: check if context is a task otherwise use that and not a new one
         const records = await ctx.task(async (task) => {
             const where = [];
+            const joinTables = [];
 
-            where.push(this.pgp.as.format('AND scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
+            if (date && period) {
+                where.push(this.pgp.as.format('cast(date_trunc($(period), scrobbles.played_at) AS DATE) = cast($(date) AS DATE)', {
+                    date,
+                    period,
+                }));
+            }
+
+            if (from || to) {
+                where.push(this.pgp.as.format('scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
+            }
 
             if (artist) {
-                where.push(this.pgp.as.format('AND artists.id = $(artist)', { artist }));
-                where.unshift(
+                where.push(this.pgp.as.format('artists.id = $(artist)', { artist }));
+                joinTables.push(
                     'JOIN artists_tracks ON artists_tracks.track_id = scrobbles.track_id',
                     'JOIN artists ON artists.id = artists_tracks.artist_id'
                 );
             }
 
             if (username) {
-                where.push(this.pgp.as.format('AND users.username = $(username)', { username }));
-                where.unshift('JOIN users ON users.id = scrobbles.user_id');
+                where.push(this.pgp.as.format('users.username = $(username)', { username }));
+                joinTables.push('JOIN users ON users.id = scrobbles.user_id');
             }
 
-            const tracks = await task.map(sql.scrobbles.getTopTracks, { where: where.join(' '), limit }, transformTotal);
+            const params = {
+                join: joinTables.join(' '),
+                where: createWhereQuery(where),
+                limit,
+            };
+
+            const query = this.pgp.as.format(sql.scrobbles.getTopTracks, params);
+
+            const tracks = await task.map(sql.scrobbles.getTopTracks, params, transformTotal);
             const artists = await task.batch(
                 tracks.map(track => task.artists.findByTrack(track.id))
             );

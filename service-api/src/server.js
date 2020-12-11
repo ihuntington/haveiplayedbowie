@@ -176,19 +176,31 @@ async function setup() {
         path: '/charts/tracks',
         options: {
             handler: async (request) => {
-                const { artist, year, month, username, limit } = request.query;
+                const { artist, date, period, year, month, username, limit } = request.query;
+                const allowedPeriod = ['year', 'month', 'week', 'day'];
                 const present = new Date();
+
+                if (period && !allowedPeriod.includes(period)) {
+                    return Boom.badRequest(`Period must be one of ${allowedPeriod.join(', ')}`);
+                }
 
                 let from = new Date(year || present.getUTCFullYear(), 0);
                 let to = new Date(from.getUTCFullYear() + 1, 0);
 
-                const query = { from, to, limit };
+                // const query = { from, to, limit };
 
                 if (month) {
                     from.setMonth(month > 0 ? month - 1 : 0);
                     to = new Date(from.getUTCFullYear(), from.getMonth() + 1);
-                    query.to = to;
+                    // query.to = to;
                 }
+
+                const query = {
+                    limit,
+                    ...(date && { date: getTruncatedDate(date, period) }),
+                    ...(period && { period }),
+                    ...(year && { from, to }),
+                };
 
                 if (username) {
                     query.username = username;
@@ -213,11 +225,14 @@ async function setup() {
             validate: {
                 query: Joi.object({
                     artist: Joi.number(),
-                    year: Joi.number(),
-                    month: Joi.number(),
-                    username: Joi.string().min(2),
+                    date: Joi.date().iso(),
                     limit: Joi.number().min(1).max(50).default(10),
-                }),
+                    month: Joi.number(),
+                    // TODO: period should check the values
+                    period: Joi.string(),
+                    username: Joi.string().min(2).max(50),
+                    year: Joi.number().max(new Date().getUTCFullYear()),
+                }).without('date', ['year', 'month']).and('date', 'period'),
             },
         },
     });

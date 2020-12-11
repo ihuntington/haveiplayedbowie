@@ -19,13 +19,17 @@
         <h2>Duration</h2>
     {{#each totals.durations}}
         <div class="dashboard-card">
-            <span class="dashboard-value">{{readable-duration this.duration}}</span>
+            {{#if (eq this.duration 0)}}
+                <span class="dashboard-value">0 minutes</span>
+            {{/if}}
+            {{#unless (eq this.duration 0)}}
+                <span class="dashboard-value">{{readable-duration this.duration}}</span>
+            {{/unless}}
             <span class="dashboard-content">
-                of music played
-                {{#if (eq this.period "day")}}today{{/if}}
-                {{#if (eq this.period "week")}}this week{{/if}}
-                {{#if (eq this.period "month")}}this month{{/if}}
-                {{#if (eq this.period "year")}}this year{{/if}}
+                {{#if (eq this.period "day")}}of music played today{{/if}}
+                {{#if (eq this.period "week")}}of music played this week{{/if}}
+                {{#if (eq this.period "month")}}of music played this month{{/if}}
+                {{#if (eq this.period "year")}}of music played this year{{/if}}
             </span>
         </div>
     {{/each}}
