@@ -3,7 +3,7 @@
         <p>Hello {{auth.name}}</p>
     {{/if}}
     <div class="dashboard">
-        <h2>Tracks</h2>
+        <h2 class="heading-2">Tracks</h2>
     {{#each totals.tracks}}
         <div class="dashboard-card">
             <span class="dashboard-value">{{number this.total}}</span>
@@ -16,7 +16,7 @@
             </span>
         </div>
     {{/each}}
-        <h2>Duration</h2>
+        <h2 class="heading-2">Duration</h2>
     {{#each totals.durations}}
         <div class="dashboard-card">
             {{#if (eq this.duration 0)}}
@@ -33,7 +33,7 @@
             </span>
         </div>
     {{/each}}
-        <h2>David Bowie</h2>
+        <h2 class="heading-2">David Bowie</h2>
     {{#each totals.bowie}}
         <div class="dashboard-card">
             <span class="dashboard-value">{{number this.total}}</span>
@@ -47,10 +47,10 @@
         </div>
     {{/each}}
 
-        <h2>Top tracks played this week</h2>
+        <h2 class="heading-2">Top tracks played this week</h2>
         {{> chart topTracks}}
 
-        <h2>Top artists played this week</h2>
+        <h2 class="heading-2">Top artists played this week</h2>
         {{> chart topArtists}}
     </div>
 </div>

@@ -77,6 +77,15 @@ li {
     margin: 0;
 }
 
+.site-header {
+    align-items: center;
+    display: grid;
+    gap: 16px;
+    grid-template-areas: "logo nav";
+    grid-template-columns: calc(2 * var(--logo-radius)) auto;
+    padding: 16px;
+}
+
 .site-name {
     background: #070707;
     border-radius: 3px;
@@ -92,27 +101,20 @@ li {
 .site-logo {
     background: var(--colour-pink-medium);
     border-radius: 9999px;
-    display: inline-block;
-    margin: 16px;
+    display: block;
     height: calc(2* var(--logo-radius));
     width: calc(2 * var(--logo-radius));
 }
 
-.site-nav {
-    border-bottom: 1px solid hsl(0, 0%, 2.7%);
-    padding: .5rem 0;
-}
-
 .site-nav a {
     display: inline-block;
-    font-size: 18px;
+    font-size: 1rem;
     font-weight: 400;
-    margin: 0 .5rem;
-    padding: .125rem;
+    padding: .25rem;
 }
 
-.site-nav a:first-of-type {
-    margin-left: 0;
+.site-nav a:not(:last-of-type) {
+    margin-right: 8px;
 }
 
 @media (min-width: 32rem) {
@@ -146,6 +148,7 @@ h2 {
 
 .heading-2 {
     font-size: 1.25rem;
+    margin: 2.5rem 0 0;
 }
 
 h3 {
@@ -178,7 +181,6 @@ h3 span {
 .chart-table {
     border-bottom: 1px solid hsl(0, 0%, 2.7%);
     border-collapse: collapse;
-    margin-bottom: 3rem;
     width: 100%;
 }
 
@@ -387,13 +389,13 @@ h3 span {
 .dashboard-value {
     color: var(--colour-blue-medium);
     display: block;
-    font-size: 48px;
+    font-size: 32px;
     font-weight: 700;
     line-height: 1;
 }
 
 .dashboard-content {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 300;
 }
 
