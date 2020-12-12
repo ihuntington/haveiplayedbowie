@@ -212,7 +212,7 @@ const setup = async () => {
                 mode: 'optional',
             },
             handler: async (request, h) => {
-                const today = formatISO(new Date(), { representation: 'date' });
+                const today = request.query.date || formatISO(new Date(), { representation: 'date' });
                 const periods = ['day', 'week', 'month', 'year'];
 
                 const tracks = await Promise.all(periods.map(period => {
@@ -225,7 +225,7 @@ const setup = async () => {
 
                 const durations = await Promise.all(periods.map(period => {
                     return services.scrobbles.getDurationByPeriod({
-                        date: formatISO(new Date(), { representation: 'date' }),
+                        date: today,
                         period,
                     });
                 }));
@@ -260,7 +260,12 @@ const setup = async () => {
                         bowie,
                     }
                 });
-            }
+            },
+            validate: {
+                query: Joi.object({
+                    date: Joi.string().isoDate(),
+                }),
+            },
         },
     });
 
