@@ -1,0 +1,32 @@
+<table class="chart-table columns-3">
+    <thead>
+        <tr>
+            <th>Track</th>
+            <th>Artist</th>
+            <th class="chart-table__count">Plays</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each this.items}}
+        <tr>
+            <td>
+                <a href="/tracks/{{this.id}}">{{this.name}}</a>
+                <div class="a11y-when-small">
+                    <span>by</span>
+                    {{#each this.artists}}
+                        <a href="/artists/{{this.id}}">{{this.name}}</a>
+                    {{/each}}
+                </div>
+            </td>
+            <td>
+                {{#each this.artists}}
+                    <a href="/artists/{{this.id}}">{{this.name}}</a>
+                {{/each}}
+            </td>
+            <td class="chart-table__count">
+                {{this.total}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>

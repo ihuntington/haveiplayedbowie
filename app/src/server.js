@@ -35,7 +35,7 @@ const setup = async () => {
         layout: true,
         layoutPath: './view/templates/layouts',
         helpersPath: './view/helpers',
-        // partialsPath: './view/partials',
+        partialsPath: './view/partials',
     });
 
     server.auth.strategy('session', 'cookie', {
@@ -238,6 +238,26 @@ const setup = async () => {
                     });
                 }));
 
+                const topTracks = await services.charts.getTopTracks({
+                    date: today,
+                    period: 'week',
+                });
+
+                const topArtists = await services.charts.getTopArtists({
+                    date: today,
+                    period: 'week',
+                });
+
+                const data = {
+                    totals: {
+                        bowie,
+                        durations,
+                        tracks,
+                    },
+                    topTracks,
+                    topArtists,
+                };
+
                 if (request.auth.isAuthenticated) {
                     return h.view('index', {
                         auth: {
@@ -245,20 +265,12 @@ const setup = async () => {
                             name: request.auth.credentials.profile.displayName,
                             username: request.auth.credentials.username,
                         },
-                        totals: {
-                            durations,
-                            tracks,
-                            bowie,
-                        }
+                        ...data,
                     });
                 }
 
                 return h.view('index', {
-                    totals: {
-                        durations,
-                        tracks,
-                        bowie,
-                    }
+                    ...data,
                 });
             },
             validate: {

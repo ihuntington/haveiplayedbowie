@@ -225,24 +225,34 @@ class ScrobblesRepository {
         return record;
     }
 
-    async getTopArtists({ from, to, username, limit = 10 }, context) {
+    async getTopArtists({ date, from, to, period, username, limit = 10 }, context) {
         const ctx = context || this.db;
         const where = [];
+
+        if (date && period) {
+            where.push(this.pgp.as.format('cast(date_trunc($(period), scrobbles.played_at) AS DATE) = cast($(date) AS DATE)', {
+                date,
+                period,
+            }));
+        }
 
         // A date range is always defined and defaults to:
         // from - start of the current year
         // to - start of the next year
-        where.push(this.pgp.as.format('WHERE scrobbles.played_at BETWEEN $1 AND $2', [from, to]));
-
-        if (username) {
-            where.push(this.pgp.as.format('AND users.username = $1', [username]));
-            // If username is defined then the users table must be joined
-            where.unshift('JOIN users ON users.id = scrobbles.user_id');
+        if (from || to) {
+            where.push(this.pgp.as.format('scrobbles.played_at BETWEEN $(from) AND $(to)', { from, to }));
         }
 
-        const query = this.pgp.as.format(sql.scrobbles.getTopArtists, { where: where.join(' '), limit });
+        if (username) {
+            where.push(this.pgp.as.format('users.username = $(username)', { username }));
+        }
 
-        const records = await ctx.map(query, [], transformTotal);
+        const params = {
+            where: createWhereQuery(where),
+            limit,
+        };
+
+        const records = await ctx.map(sql.scrobbles.getTopArtists, params, transformTotal);
 
         return records;
     }
@@ -284,8 +294,6 @@ class ScrobblesRepository {
                 where: createWhereQuery(where),
                 limit,
             };
-
-            const query = this.pgp.as.format(sql.scrobbles.getTopTracks, params);
 
             const tracks = await task.map(sql.scrobbles.getTopTracks, params, transformTotal);
             const artists = await task.batch(
