@@ -1,0 +1,20 @@
+<table class="chart-table columns-3">
+    <thead>
+        <tr>
+            <th>Artist</th>
+            <th class="chart-table__count">Plays</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each this.items}}
+        <tr>
+            <td>
+                <a href="/artists/{{this.id}}">{{this.name}}</a>
+            </td>
+            <td class="chart-table__count">
+                {{this.total}}
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
