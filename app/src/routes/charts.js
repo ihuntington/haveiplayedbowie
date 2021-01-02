@@ -8,8 +8,8 @@ const parseISO = require('date-fns/parseISO');
 const eachYearOfInterval = require('date-fns/eachYearOfInterval');
 
 async function charts(request, h) {
-    const { SERVICE_API_URL, START_DATE } = process.env;
-    const startDate = parseISO(START_DATE);
+    const { SERVICE_API_URL, PROJECT_START_DATE } = process.env;
+    const startDate = parseISO(PROJECT_START_DATE);
     const present = new Date();
     const years = eachYearOfInterval({
         start: startDate,
