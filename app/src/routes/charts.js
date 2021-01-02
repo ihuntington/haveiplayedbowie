@@ -4,10 +4,17 @@ const process = require('process');
 const qs = require('query-string');
 const Wreck = require('@hapi/wreck');
 const format = require('date-fns/format');
+const parseISO = require('date-fns/parseISO');
+const eachYearOfInterval = require('date-fns/eachYearOfInterval');
 
 async function charts(request, h) {
-    const { SERVICE_API_URL } = process.env;
+    const { SERVICE_API_URL, START_DATE } = process.env;
+    const startDate = parseISO(START_DATE);
     const present = new Date();
+    const years = eachYearOfInterval({
+        start: startDate,
+        end: present,
+    });
 
     let { month, year } = request.params;
     let datestampFormat = 'yyyy';
@@ -36,6 +43,7 @@ async function charts(request, h) {
         return h.view('chart', {
             ...payload,
             datestamp: format(new Date(year, month - 1), datestampFormat),
+            years: years.map((year) => format(year, 'yyyy')),
         });
     } catch (err) {
         return h.response().code(500);

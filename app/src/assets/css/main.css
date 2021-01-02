@@ -404,6 +404,29 @@ h3 span {
     justify-content: space-between;;
 }
 
+.charts-years {
+    border-top: 1px solid hsl(0, 0%, 2.7%);
+    border-bottom: 1px solid hsl(0, 0%, 2.7%);
+    margin-top: 1rem;
+    padding: 1rem 0;
+}
+
+.charts-years ol {
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.charts-years li:not(:last-of-type) {
+    margin-right: 1rem;
+}
+
+.text-base {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 4px;
+}
+
 @media (min-width: 32rem) {
     .columns-2 th,
     .columns-2 td {

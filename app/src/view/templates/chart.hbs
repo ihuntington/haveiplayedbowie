@@ -1,43 +1,51 @@
-<h2>Charts for {{datestamp}}</h2>
+<div class="charts-container">
+    <div class="charts-years">
+        <h2 class="text-base">Charts by year</h2>
+        <ol>
+            {{#each this.years}}
+            <li>
+                <a href="/charts/{{this}}">{{this}}</a>
+            </li>
+            {{/each}}
+        </ol>
+    </div>
+    <div class="charts-content">
+        <h2>Charts for {{datestamp}}</h2>
 
-{{#if this.bowieTracks}}
-<h3>
-    <span>Top 10 Bowie tracks</span>
-</h3>
-<table class="chart-table columns-2">
-    <thead>
-        <tr>
-            <th>Track</th>
-            <th class="chart-table__count">Plays</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{#each bowieTracks}}
-        <tr>
-            <td>
-                <a href="/tracks/{{this.id}}">{{this.name}}</a>
-            </td>
-            <td class="chart-table__count">
-                {{this.total}}
-            </td>
-        </tr>
-        {{/each}}
-    </tbody>
-</table>
-{{/if}}
+        {{#if this.bowieTracks}}
+        <h2 class="heading-2">Top 10 Bowie tracks</h2>
+        <table class="chart-table columns-2">
+            <thead>
+                <tr>
+                    <th>Track</th>
+                    <th class="chart-table__count">Plays</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each bowieTracks}}
+                <tr>
+                    <td>
+                        <a href="/tracks/{{this.id}}">{{this.name}}</a>
+                    </td>
+                    <td class="chart-table__count">
+                        {{this.total}}
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
 
-<h3>
-    <span>Top 10 artists</span>
-</h3>
+        <h2 class="heading-2">Top 10 artists</h2>
 
-{{#if this.artists}}
-    {{> charts/artist items=this.artists}}
-{{/if}}
+        {{#if this.artists}}
+            {{> charts/artist items=this.artists}}
+        {{/if}}
 
-<h3>
-    <span>Top 10 tracks</span>
-</h3>
+        <h2 class="heading-2">Top 10 tracks</h2>
 
-{{#if this.tracks}}
-    {{> charts/track items=this.tracks}}
-{{/if}}
+        {{#if this.tracks}}
+            {{> charts/track items=this.tracks}}
+        {{/if}}
+    </div>
+</div>
