@@ -15,6 +15,6 @@ Handlebars.registerHelper('duration', function (ms) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 });
 
-Handlebars.registerHelper('readable-duration', function (ms) {
+Handlebars.registerHelper('readable-duration', function (ms = 0) {
     return formatDuration(intervalToDuration({ start: 0, end: ms }), { delimiter: ', ' });
 });
