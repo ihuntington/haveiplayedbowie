@@ -65,9 +65,10 @@ const setup = async () => {
         scope: ['user-read-email', 'user-read-recently-played']
     });
 
+    server.register([plugins.artists]);
     server.register([plugins.listens]);
-    server.register([plugins.users]);
     server.register([plugins.tracks]);
+    server.register([plugins.users]);
 
     // TODO: route only available not in production
     server.route({
@@ -89,20 +90,6 @@ const setup = async () => {
                 path: Path.join(__dirname, 'bookmarklet')
             }
         }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/artists/{artist}',
-        handler: routes.artist,
-        options: {
-            validate: {
-                query: Joi.object({
-                    from: Joi.date().iso(),
-                    to: Joi.date().iso(),
-                }),
-            },
-        },
     });
 
     server.route({
