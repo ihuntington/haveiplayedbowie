@@ -1,6 +1,6 @@
 'use strict';
 
-const Joi = require('joi');
+const routes = require('../routes');
 
 const plugin = {
     name: 'app/charts',
