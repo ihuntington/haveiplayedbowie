@@ -67,6 +67,7 @@ const setup = async () => {
 
     server.register([plugins.listens]);
     server.register([plugins.users]);
+    server.register([plugins.tracks]);
 
     // TODO: route only available not in production
     server.route({
@@ -88,12 +89,6 @@ const setup = async () => {
                 path: Path.join(__dirname, 'bookmarklet')
             }
         }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/tracks/{track}',
-        handler: routes.track,
     });
 
     server.route({
