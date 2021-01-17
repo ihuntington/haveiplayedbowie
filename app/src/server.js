@@ -66,8 +66,7 @@ const setup = async () => {
     });
 
     server.register([plugins.listens]);
-
-    // server.auth.default('session');
+    server.register([plugins.users]);
 
     // TODO: route only available not in production
     server.route({
@@ -87,26 +86,6 @@ const setup = async () => {
         handler: {
             directory: {
                 path: Path.join(__dirname, 'bookmarklet')
-            }
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/u/{username}/diary',
-        config: {
-            auth: {
-                strategy: 'session',
-                mode: 'optional',
-            },
-            handler: routes.users.diary,
-            validate: {
-                params: Joi.object({
-                    username: Joi.string().min(2).max(50),
-                }),
-                query: Joi.object({
-                    date: Joi.date().iso().max('now'),
-                }),
             }
         }
     });
