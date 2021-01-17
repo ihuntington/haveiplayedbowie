@@ -39,7 +39,28 @@ const getDurationByPeriod = async ({ date, period, username }) => {
     }
 };
 
+const add = async (user, played_at, track) => {
+    const { SERVICE_API_URL } = process.env;
+
+    try {
+        const url = `${SERVICE_API_URL}/scrobbles`;
+        const response = await Wreck.post(url, {
+            payload: {
+                user,
+                items: [{ track, played_at }],
+            },
+            json: true,
+        });
+
+        return response.payload;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+};
+
 module.exports = {
+    add,
     getDurationByPeriod,
     getTotalByDate,
 };

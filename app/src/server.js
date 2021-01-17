@@ -3,12 +3,14 @@
 const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
+const Boom = require('@hapi/boom');
 const Joi = require('joi');
 const formatISO = require('date-fns/formatISO');
 
 const services = require('./services');
 const routes = require('./routes');
 const { sessionValidator } = require('./validators/session');
+const Spotify = require('./library/spotify');
 
 let server = null;
 
@@ -44,6 +46,8 @@ const setup = async () => {
             password: process.env.COOKIE_PASSWORD,
             isSecure: process.env.NODE_ENV === 'production',
             path: '/',
+            isSameSite: "None",
+            isHttpOnly: false,
         },
         redirectTo: '/login',
         validateFunc: sessionValidator,
@@ -57,6 +61,7 @@ const setup = async () => {
         // App engine runs as non-https
         forceHttps: process.env.NODE_ENV === 'production',
         isSecure: process.env.NODE_ENV === 'production',
+        location: process.env.APP_URL,
         scope: ['user-read-email', 'user-read-recently-played']
     });
 
@@ -69,6 +74,17 @@ const setup = async () => {
         handler: {
             directory: {
                 path: Path.join(__dirname, 'assets')
+            }
+        }
+    });
+
+    // TODO: route only available not in production
+    server.route({
+        method: 'GET',
+        path: '/bookmarklet/{param*}',
+        handler: {
+            directory: {
+                path: Path.join(__dirname, 'bookmarklet')
             }
         }
     });
@@ -202,6 +218,103 @@ const setup = async () => {
             return h.view('about');
         }
     });
+
+    server.route({
+        method: 'POST',
+        path: '/api/listens',
+        options: {
+            auth: {
+                strategy: 'session',
+                mode: 'required',
+            },
+            plugins: {
+                'hapi-auth-cookie': {
+                    // disable redirect to /login for an API route
+                    redirectTo: false,
+                },
+            },
+            handler: async (request, h) => {
+                const { played_at, segment }  = request.payload;
+                const spotify = new Spotify();
+
+                let trackId = null;
+                let track = null;
+
+                if (segment.uris && segment.uris.length) {
+                    const service = segment.uris.find((service) => {
+                        return service.id === "commercial-music-service-spotify";
+                    });
+
+                    if (service) {
+                        trackId = Spotify.extractTrackId(service.uri);
+                    }
+                }
+
+                if (trackId) {
+                    track =  await spotify.getTrackById(trackId);
+                }
+
+                // TODO if not found on spotify
+                if (track) {
+                    const user = request.auth.credentials.id;
+                    const listen = await services.scrobbles.add(user, played_at, track);
+
+                    if (listen) {
+                        return h.response().code(201);
+                    }
+                }
+            },
+            cors: {
+                origin: [process.env.APP_CORS_ORIGIN],
+                credentials: true,
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/s/{token}/bookmarklet',
+        options: {
+            handler: (request, h) => {
+                if (request.params.token !== 'abc123') {
+                    return Boom.unauthorized();
+                }
+                console.log(__dirname);
+                return h.file('./bookmarklet/sounds.js', { confine: false });
+            },
+            files: {
+                relativeTo: __dirname,
+            },
+        },
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/test',
+        options: {
+            auth: {
+                strategy: 'session',
+                mode: 'required',
+            },
+            plugins: {
+                'hapi-auth-cookie': {
+                    // disable redirect to /login for an API route
+                    redirectTo: false,
+                },
+            },
+            handler: (request, h) => {
+                const { segment } = request.query;
+                try {
+                    const buff = Buffer.from(segment, 'base64');
+                    const result = JSON.parse(buff.toString('utf-8'));
+                    return result;
+                } catch (err) {
+                    console.log(err);
+                    return h.response().code(400);
+                }
+            }
+        }
+    })
 
     server.route({
         method: 'GET',
