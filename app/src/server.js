@@ -66,6 +66,7 @@ const setup = async () => {
     });
 
     server.register([plugins.artists]);
+    server.register([plugins.charts]);
     server.register([plugins.listens]);
     server.register([plugins.tracks]);
     server.register([plugins.users]);
@@ -90,18 +91,6 @@ const setup = async () => {
                 path: Path.join(__dirname, 'bookmarklet')
             }
         }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/charts',
-        handler: routes.charts,
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/charts/{year}/{month?}',
-        handler: routes.charts,
     });
 
     server.route({
@@ -192,34 +181,6 @@ const setup = async () => {
             },
         },
     });
-
-    server.route({
-        method: 'GET',
-        path: '/test',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'required',
-            },
-            plugins: {
-                'hapi-auth-cookie': {
-                    // disable redirect to /login for an API route
-                    redirectTo: false,
-                },
-            },
-            handler: (request, h) => {
-                const { segment } = request.query;
-                try {
-                    const buff = Buffer.from(segment, 'base64');
-                    const result = JSON.parse(buff.toString('utf-8'));
-                    return result;
-                } catch (err) {
-                    console.log(err);
-                    return h.response().code(400);
-                }
-            }
-        }
-    })
 
     server.route({
         method: 'GET',
