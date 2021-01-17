@@ -65,6 +65,7 @@ const setup = async () => {
         scope: ['user-read-email', 'user-read-recently-played']
     });
 
+    server.register([plugins.account]);
     server.register([plugins.artists]);
     server.register([plugins.auth]);
     server.register([plugins.charts]);
@@ -92,35 +93,6 @@ const setup = async () => {
                 path: Path.join(__dirname, 'bookmarklet')
             }
         }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/account/username',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'required',
-            },
-            handler: routes.account.getUsername,
-        },
-    });
-
-    server.route({
-        method: 'POST',
-        path: '/account/username',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'required',
-            },
-            handler: routes.account.postUsername,
-            validate: {
-                payload: Joi.object({
-                    username: Joi.string().min(2).max(50),
-                }),
-            },
-        },
     });
 
     server.route({
