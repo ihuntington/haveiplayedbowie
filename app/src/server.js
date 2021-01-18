@@ -4,11 +4,7 @@ const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const Boom = require('@hapi/boom');
-const Joi = require('joi');
-const formatISO = require('date-fns/formatISO');
 
-const services = require('./services');
-const routes = require('./routes');
 const plugins = require('./plugins');
 const { sessionValidator } = require('./validators/session');
 
@@ -58,7 +54,6 @@ const setup = async () => {
         password: process.env.SPOTIFY_COOKIE_PASSWORD,
         clientId: process.env.SPOTIFY_CLIENT_ID,
         clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-        // App engine runs as non-https
         forceHttps: process.env.NODE_ENV === 'production',
         isSecure: process.env.NODE_ENV === 'production',
         location: process.env.APP_URL,
@@ -69,6 +64,7 @@ const setup = async () => {
     server.register([plugins.artists]);
     server.register([plugins.auth]);
     server.register([plugins.charts]);
+    server.register([plugins.home]);
     server.register([plugins.listens]);
     server.register([plugins.tracks]);
     server.register([plugins.users]);
@@ -120,87 +116,8 @@ const setup = async () => {
         },
     });
 
-    server.route({
-        method: 'GET',
-        path: '/',
-        options: {
-            auth: {
-                strategy: 'session',
-                mode: 'optional',
-            },
-            handler: async (request, h) => {
-                const today = request.query.date || formatISO(new Date(), { representation: 'date' });
-                const periods = ['day', 'week', 'month', 'year'];
-
-                const tracks = await Promise.all(periods.map(period => {
-                    return services.scrobbles.getTotalByDate({
-                        column: 'track',
-                        date: today,
-                        period,
-                    });
-                }));
-
-                const durations = await Promise.all(periods.map(period => {
-                    return services.scrobbles.getDurationByPeriod({
-                        date: today,
-                        period,
-                    });
-                }));
-
-                const bowie = await Promise.all(periods.map(period => {
-                    return services.scrobbles.getTotalByDate({
-                        artist: process.env.BOWIE_ARTIST_ID,
-                        date: today,
-                        period,
-                    });
-                }));
-
-                const topTracks = await services.charts.getTopTracks({
-                    date: today,
-                    period: 'week',
-                });
-
-                const topArtists = await services.charts.getTopArtists({
-                    date: today,
-                    period: 'week',
-                });
-
-                const data = {
-                    totals: {
-                        bowie,
-                        durations,
-                        tracks,
-                    },
-                    topTracks,
-                    topArtists,
-                };
-
-                if (request.auth.isAuthenticated) {
-                    return h.view('index', {
-                        auth: {
-                            isAuthenticated: true,
-                            name: request.auth.credentials.profile.displayName,
-                            username: request.auth.credentials.username,
-                        },
-                        ...data,
-                    });
-                }
-
-                return h.view('index', {
-                    ...data,
-                });
-            },
-            validate: {
-                query: Joi.object({
-                    date: Joi.string().isoDate(),
-                }),
-            },
-        },
-    });
-
     return server;
 };
-
 
 exports.init = async () => {
     await setup();
