@@ -179,7 +179,7 @@
                 // these need to be explicit and the API accepts these
                 // API would not calculate start time... this will be a DB change
                 played_at: new Date().toJSON(),
-                service: 'bbc',
+                service: 'BBC',
             };
 
             try {

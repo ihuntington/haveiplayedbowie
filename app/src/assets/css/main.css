@@ -2,6 +2,8 @@
     --colour-grey-light: hsl(0, 0%, 93.3%);
     --colour-pink-medium: hsl(318, 58.3%, 47.1%);
     --colour-blue-medium: hsl(202.3, 58.3%, 47.1%);
+    --colour-service-spotify: hsl(149, 60%, 75%);
+    --colour-service-bbc: hsl(17deg 100% 75%);
     --card-unit-height: 24px;
     --logo-radius: 32px;
     --event-unit-height: calc(1rem * 12);
@@ -212,6 +214,11 @@ h3 span {
     width: 25%;
 }
 
+.container {
+    margin: 0 auto;
+    max-width: 50rem;
+}
+
 .event {
     background: hsl(255, 100%, 100%);
     display: grid;
@@ -227,13 +234,20 @@ h3 span {
 }
 
 .event::before {
-    background: hsl(149, 60%, 70%);
     content: '';
     display: block;
     height: 2px;
     position: absolute;
     top: 0;
     width: 100%;
+}
+
+.event-service-spotify::before {
+    background-color: var(--colour-service-spotify);
+}
+
+.event-service-bbc::before {
+    background-color: var(--colour-service-bbc);
 }
 
 .event-body {
@@ -254,9 +268,17 @@ h3 span {
     top: 0;
 }
 
+.event-service-spotify .event-time {
+    background-color: var(--colour-service-spotify);
+}
+
+.event-service-bbc .event-time {
+    background-color: var(--colour-service-bbc);
+}
+
 .hour {
     display: grid;
-    grid-template-columns: 90px auto;
+    grid-template-columns: 44px auto;
     grid-template-areas: "times events";
     min-height: var(--event-unit-height);
     position: relative;
@@ -274,6 +296,8 @@ h3 span {
 
 .hour-time {
     font-feature-settings: 'kern' 1, 'tnum' 1;
+    font-size: 14px;
+    padding: 2px;
 }
 
 .event-duration {

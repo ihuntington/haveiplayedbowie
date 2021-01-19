@@ -27,7 +27,7 @@
         <div class="hour" style="height: {{this.hourHeight}}px;">
             <time class="hour-time" datetime="{{date-time this.time}}">{{time this.time}}</time>
             {{#each this.items}}
-            <div class="event" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
+            <div class="event event-service-{{this.service}}" style="height: calc({{this.trackHeight}} * var(--card-unit-height)); top: {{this.posY}}px;">
                 <div class="event-time">
                     <time datetime="{{date-time this.startTime}}">{{time this.startTime}}</time>
                 </div>

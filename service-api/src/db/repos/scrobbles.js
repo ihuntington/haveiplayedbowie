@@ -74,6 +74,7 @@ class ScrobblesRepository {
                     track_id: match.id,
                     played_at: item.played_at,
                     user_id: uid,
+                    source_service: item.service,
                 }, tx);
 
                 return scrobble;
@@ -107,6 +108,7 @@ class ScrobblesRepository {
                 track_id: track.id,
                 played_at: item.played_at,
                 user_id: uid,
+                source_service: item.service,
             }, tx);
 
             return scrobble;

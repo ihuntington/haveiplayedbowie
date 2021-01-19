@@ -19,6 +19,12 @@ const TEN_MINUTES_IN_PX = 24;
 const SPOTIFY_START_DATE = utcToZonedTime(process.env.SPOTIFY_START_DATE, 'utc');
 const MIN_TRACK_DURATION_MS = 3 * ONE_MINUTE;
 
+const SOURCES = {
+    BBC: 'bbc',
+    SPOTIFY: 'spotify',
+    LASTFM: 'lastfm',
+};
+
 function getDuration(ms) {
     const minutes = Math.floor((ms / 1000) / 60);
     const seconds = Math.round((ms / 1000) % 60);
@@ -226,7 +232,8 @@ function diary(scrobbles, timezone = 'utc') {
             return {
                 ...track,
                 posY,
-            }
+                service: SOURCES[track.source_service] || SOURCES.SPOTIFY,
+            };
         });
 
         return {
