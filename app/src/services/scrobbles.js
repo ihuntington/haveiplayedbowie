@@ -39,7 +39,7 @@ const getDurationByPeriod = async ({ date, period, username }) => {
     }
 };
 
-const add = async (user, played_at, track) => {
+const add = async (user, played_at, service, track) => {
     const { SERVICE_API_URL } = process.env;
 
     try {
@@ -47,7 +47,7 @@ const add = async (user, played_at, track) => {
         const response = await Wreck.post(url, {
             payload: {
                 user,
-                items: [{ track, played_at }],
+                items: [{ track, played_at, service }],
             },
             json: true,
         });
