@@ -77,7 +77,13 @@ server.route({
 
             try {
                 const response = await Wreck.post(`${process.env.SERVICE_API_URL}/scrobbles`, {
-                    payload: { user: user.id, items: tracks },
+                    payload: {
+                        user: user.id,
+                        items: tracks.map((track) => ({
+                            ...track,
+                            service: 'SPOTIFY',
+                        })),
+                    },
                     json: true,
                 });
 
