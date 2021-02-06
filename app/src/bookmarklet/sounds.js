@@ -7,6 +7,7 @@ import.meta.env = __SNOWPACK_ENV__;
  * - When pause continue to request latest segments every minute
  * - Store tracks from segments in session storage
  * - Use a worker for staying synced when tab sleeps
+ * - Check for isLive and only run if is on demand -- will break otherwise
  */
 (function hipbt_bbc_sounds () {
     const { NODE_ENV, SNOWPACK_PUBLIC_BOWIE_URL, SNOWPACK_PUBLIC_BBC_URL } = import.meta.env;
