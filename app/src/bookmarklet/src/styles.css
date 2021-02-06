@@ -1,0 +1,28 @@
+.bookmark-bar {
+    --colour-grey-light: hsl(0, 0%, 93.3%);
+    --colour-pink-medium: hsl(318, 58.3%, 47.1%);
+
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+
+    background-color: var(--colour-grey-light);
+    column-gap: 16px;
+    display: grid;
+    grid-template-areas: "logo details";
+    grid-template-columns: 64px auto;
+    margin: 0;
+    padding: 16px;
+}
+
+.bookmark-bar .logo {
+    color: var(--colour-pink-medium);
+    display: block;
+    grid-area: logo;
+}
+
+.now-playing {
+    grid-area: details;
+    font-size: 14px;
+    line-height: 1.5;
+}

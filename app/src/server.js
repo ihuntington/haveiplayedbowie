@@ -3,7 +3,6 @@
 const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
-const Boom = require('@hapi/boom');
 
 const plugins = require('./plugins');
 const { sessionValidator } = require('./validators/session');
@@ -80,38 +79,24 @@ const setup = async () => {
         }
     });
 
-    // TODO: route only available not in production
-    server.route({
-        method: 'GET',
-        path: '/bookmarklet/{param*}',
-        handler: {
-            directory: {
-                path: Path.join(__dirname, 'bookmarklet')
-            }
-        }
-    });
-
     server.route({
         method: 'GET',
         path: '/about',
-        handler: (request, h) => {
-            return h.view('about');
-        }
+        handler: (_, h) => h.view('about'),
     });
 
     server.route({
         method: 'GET',
-        path: '/s/{token}/bookmarklet',
+        path: '/bookmarklet/{param*}',
         options: {
-            handler: (request, h) => {
-                if (request.params.token !== 'abc123') {
-                    return Boom.unauthorized();
-                }
-                console.log(__dirname);
-                return h.file('./bookmarklet/sounds.js', { confine: false });
+            handler: {
+                directory: {
+                    path: Path.join(__dirname, 'bookmarklet'),
+                    redirectToSlash: true,
+                },
             },
-            files: {
-                relativeTo: __dirname,
+            cors: {
+                origin: ["https://www.bbc.co.uk"],
             },
         },
     });
