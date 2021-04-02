@@ -45,6 +45,24 @@ async function setup() {
 
     server.route({
         method: 'GET',
+        path: '/artists/{aid}',
+        handler: async (request) => {
+            const { aid } = request.params;
+
+            try {
+                const data = await db.artists.findById(aid);
+                return {
+                    ...data,
+                };
+            } catch (err) {
+                console.log(err);
+                return Boom.badRequest();
+            }
+        },
+    });
+
+    server.route({
+        method: 'GET',
         path: '/artists/{aid}/summary',
         options: {
             validate: {

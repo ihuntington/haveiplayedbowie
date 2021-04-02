@@ -1,15 +1,13 @@
 'use strict';
 
-const process = require('process');
-const Wreck = require('@hapi/wreck');
-const qs = require('query-string');
 const formatISO = require('date-fns/formatISO');
 const startOfYear = require('date-fns/startOfYear');
 const endOfYear = require('date-fns/endOfYear');
+const charts = require('../services/charts');
+const artists = require('../services/artists');
 
 async function artist(request, h) {
-    const { SERVICE_API_URL } = process.env;
-    const { artist } = request.params;
+    const { aid } = request.params;
     const { from, to } = request.query;
 
     const now = new Date();
@@ -21,17 +19,21 @@ async function artist(request, h) {
         to: formatISO(to || defaultTo, { representation: 'date' }),
     };
 
-    try {
-        const data = await Wreck.get(`${SERVICE_API_URL}/artists/${artist}/summary?${qs.stringify(query)}`, { json: true });
+    const [artist, tracks] = await Promise.all([
+        artists.getArtistById(aid),
+        charts.getTopTracks({ artist: aid, limit: 10, }),
+    ]);
 
-        return h.view('artist', {
-            year: now.getUTCFullYear(),
-            ...data.payload,
-        });
-    } catch (err) {
-        console.log(err);
-        return h.response().code(404);
+    if (!artist) {
+        h.response().code(404);
     }
+
+    return h.view('artist', {
+        artist,
+        year: now.getUTCFullYear(),
+        tracks: tracks.items,
+        // ...data.payload,
+    });
 }
 
 module.exports = artist;

@@ -451,6 +451,12 @@ h3 span {
     margin: 0 0 4px;
 }
 
+.artist__masthead {
+    display: flex;
+    align-items: center;
+    height: 200px;
+}
+
 @media (min-width: 32rem) {
     .columns-2 th,
     .columns-2 td {

@@ -8,7 +8,7 @@ const plugin = {
     register: async (server) => {
         server.route({
             method: 'GET',
-            path: '/artists/{artist}',
+            path: '/artists/{aid}',
             handler: routes.artist,
             options: {
                 validate: {
