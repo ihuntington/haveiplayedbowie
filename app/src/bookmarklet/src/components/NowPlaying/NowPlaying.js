@@ -4,7 +4,6 @@ import.meta.env = __SNOWPACK_ENV__;
 import {h} from "../../../web_modules/preact.js";
 import {useEffect, useState} from "../../../web_modules/preact/hooks.js";
 import {sendSegment} from "../../services.js";
-import "./NowPlaying.css.proxy.js";
 const {SNOWPACK_PUBLIC_BBC_URL} = import.meta.env;
 export const NowPlaying = () => {
   const [artist, setArtist] = useState("");

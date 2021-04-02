@@ -15,17 +15,76 @@ import.meta.env = __SNOWPACK_ENV__;
         SEGMENTS: 'https://rms.api.bbc.co.uk/v2/services/bbc_6music/segments/latest',
     };
 
+    const getEmbeddedPlayers = () => {
+        if (window.embeddedMedia && window.embeddedMedia.api) {
+            return window.embeddedMedia.api.players();
+        }
+    };
+
+    const getEmbeddedPlayer = (id) => {
+        const players = getEmbeddedPlayers();
+
+        if (!players) {
+            return;
+        }
+
+        return players[id];
+    };
+
+    const getPreloadedState = () => {
+        return window.__PRELOADED_STATE__ || null;
+    };
+
+    const getProgramme = () => {
+        const state = getPreloadedState();
+
+        if (!state) {
+            return null;
+        }
+
+        const programme = {
+            title: state?.programmes?.current?.titles?.primary,
+            episode: state?.programmes?.current?.titles?.secondary,
+        };
+
+        return programme;
+    };
+
+    const getStation = () => {
+        const state = getPreloadedState();
+
+        if (!state) {
+            return;
+        }
+
+        const network = state?.programmes?.current?.network;
+
+        if (!network) {
+            return;
+        }
+
+        const station = {
+            name: network.short_title,
+            id: network.id,
+            key: network.key,
+        };
+
+        return station;
+    };
+
     class Sounds {
         constructor() {
             this._debug = NODE_ENV !== "production";
 
             this.log("HIPBT x BBC Sounds start");
 
-            this._player = this.getEmbeddedPlayers()['smp-wrapper'];
+            this._player = getEmbeddedPlayer('smp-wrapper');
             this.currentTime = this._player.currentTime() * 1000;
             // TODO: if on demand the take first track from preloaded state
             this.currentTrack = null;
             this.seeking = false;
+            this.station = getStation();
+            this.programme = getProgramme();
             this._iframe = null;
             this._tracklist = this.getTrackList();
 
@@ -208,29 +267,8 @@ import.meta.env = __SNOWPACK_ENV__;
             }
         };
 
-        getEmbeddedPlayers() {
-            return window.embeddedMedia.api.players();
-        };
-
-        getPreloadedState() {
-            return window.__PRELOADED_STATE__ || {};
-        };
-
-        getProgramme() {
-            const state = this.getPreloadedState();
-
-            if (state.programmes && state.programmes.current) {
-                return {
-                    programme: state.programmes.current.titles.primary,
-                    episode: state.programmes.current.titles.secondary,
-                };
-            }
-
-            return null;
-        }
-
         getTrackList() {
-            const state = this.getPreloadedState();
+            const state = getPreloadedState();
             const tracks = state && state.tracklist && state.tracklist.tracks || [];
             // Note - 31/01/2021 - noticed that sometimes offset is null
             return tracks.filter((track) => !!track.offset);
