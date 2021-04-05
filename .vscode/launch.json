@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch API",
+            "program": "${workspaceFolder}/service-api/src/index.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node",
+            "envFile": "${workspaceFolder}/service-api/.env.local",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
             "type": "node",
             "request": "attach",
             "name": "Attach to debug process",

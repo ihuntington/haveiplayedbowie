@@ -1,11 +1,10 @@
 'use strict';
 
-const DatabaseClient = require('../db');
+const { db, pgp } = require('../db');
 
 const dbPlugin = {
     name: 'db',
-    register: async (server) => {
-        const { db, pgp } = new DatabaseClient();
+    register: (server) => {
         server.app.db = db;
         server.app.pgp = pgp;
     },
