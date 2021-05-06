@@ -39,7 +39,8 @@ const setup = async () => {
         cookie: {
             name: 'sid',
             password: process.env.COOKIE_PASSWORD,
-            isSecure: process.env.NODE_ENV === 'production',
+            // Always set to true now even for local development is over HTTPS
+            isSecure: true,
             path: '/',
             isSameSite: "None",
             isHttpOnly: false,
