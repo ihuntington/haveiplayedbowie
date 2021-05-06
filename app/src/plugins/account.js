@@ -1,5 +1,6 @@
 'use strict';
 
+const process = require('process');
 const Joi = require('joi');
 const routes = require('../routes');
 
@@ -32,6 +33,14 @@ const plugin = {
                         username: Joi.string().min(2).max(50),
                     }),
                 },
+            },
+        });
+
+        server.route({
+            method: 'GET',
+            path: "/account/bookmark",
+            handler: (_, h) => {
+                return h.view('account/bookmark', { APP_URL: process.env.APP_URL });
             },
         });
     },
