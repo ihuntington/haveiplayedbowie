@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model artists {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(256)
+  spotify_id     String?          @db.VarChar(64)
+  artists_tracks artists_tracks[]
+}
+
+model artists_tracks {
+  artist_id    Int
+  track_id     Int
+  artist_order Int     @default(0)
+  artists      artists @relation(fields: [artist_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tracks       tracks  @relation(fields: [track_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([artist_id, track_id])
+}
+
+model scrobbles {
+  id             Int       @id @default(autoincrement())
+  track_id       Int?
+  played_at      DateTime? @db.Timestamp(6)
+  user_id        String?   @db.Uuid
+  source_service service?
+  tracks         tracks?   @relation(fields: [track_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model track_audio_features {
+  id               Int     @id @default(autoincrement())
+  track_id         Int?
+  acousticness     Float?  @db.Real
+  energy           Float?  @db.Real
+  danceability     Float?  @db.Real
+  instrumentalness Float?  @db.Real
+  liveness         Float?  @db.Real
+  loudness         Float?  @db.Real
+  speechiness      Float?  @db.Real
+  valence          Float?  @db.Real
+  time_signature   Int?
+  tempo            Float?  @db.Real
+  tracks           tracks? @relation(fields: [track_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tracks {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(256)
+  duration_ms          Int?
+  spotify_id           String?                @db.VarChar(64)
+  artists_tracks       artists_tracks[]
+  scrobbles            scrobbles[]
+  track_audio_features track_audio_features[]
+}
+
+model users {
+  id                 String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  token              String?     @db.VarChar(256)
+  refresh_token      String?     @db.VarChar(256)
+  email              String      @unique @db.VarChar(254)
+  created_at         DateTime?   @default(now()) @db.Timestamp(6)
+  modified_at        DateTime?   @default(now()) @db.Timestamp(6)
+  profile            Json        @db.Json
+  recently_played_at DateTime?   @db.Timestamp(6)
+  username           String?     @unique(map: "unique_username") @db.VarChar(50)
+  timezone           String?     @db.VarChar(256)
+  scrobbles          scrobbles[]
+}
+
+enum service {
+  SPOTIFY
+  BBC
+  LASTFM
+}
