@@ -1,8 +1,6 @@
-'use strict';
+import sql from '../../sql';
 
-const sql = require('../../sql');
-
-class UsersRepository{
+export class UsersRepository{
     constructor(db, pgp) {
         this.db = db;
         this.pgp = pgp;
@@ -48,5 +46,3 @@ class UsersRepository{
         return this.db.none(sql.users.updateRecentlyPlayed, [id]);
     }
 }
-
-module.exports = UsersRepository;

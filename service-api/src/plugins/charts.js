@@ -1,10 +1,8 @@
-'use strict';
+import Boom from'@hapi/boom';
+import Joi from'joi';
+import { getTruncatedDate } from'../utils/dates';
 
-const Boom = require('@hapi/boom');
-const Joi = require('joi');
-const { getTruncatedDate } = require('../utils/dates');
-
-const chartsPlugin = {
+export const chartsPlugin = {
     name: 'chartsPlugin',
     register: async (server) => {
         const { db } = server.app;
@@ -183,5 +181,3 @@ const chartsPlugin = {
         });
     },
 };
-
-module.exports = chartsPlugin;

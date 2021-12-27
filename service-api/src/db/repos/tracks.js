@@ -1,8 +1,6 @@
-'use strict';
+import sql from '../../sql';
 
-const sql = require('../../sql');
-
-class TracksRepository {
+export class TracksRepository {
     constructor(db, pgp) {
         this.db = db;
         this.pgp = pgp;
@@ -41,5 +39,3 @@ class TracksRepository {
         return data;
     }
 }
-
-module.exports = TracksRepository;

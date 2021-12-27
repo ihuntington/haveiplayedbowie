@@ -1,6 +1,4 @@
-'use strict';
-
-const sql = require('../../sql');
+import sql from '../../sql';
 
 // TODO: cast to number in query
 const transformTotal = (item) => ({
@@ -8,7 +6,7 @@ const transformTotal = (item) => ({
     total: parseInt(item.total, 10),
 });
 
-class ArtistsRepository {
+export class ArtistsRepository {
     constructor(db, pgp) {
         this.db = db;
         this.pgp = pgp;
@@ -54,5 +52,3 @@ class ArtistsRepository {
         return summary;
     }
 }
-
-module.exports = ArtistsRepository;

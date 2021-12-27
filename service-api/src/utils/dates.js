@@ -1,10 +1,10 @@
 'use strict';
 
-const startOfYear = require('date-fns/startOfYear');
-const startOfMonth = require('date-fns/startOfMonth');
-const startOfWeek = require('date-fns/startOfWeek');
+import startOfYear from 'date-fns/startOfYear';
+import startOfMonth from 'date-fns/startOfMonth';
+import startOfWeek from 'date-fns/startOfWeek';
 
-const getTruncatedDate = (date, period) => {
+export const getTruncatedDate = (date, period) => {
     if (period === 'year') {
         return startOfYear(date);
     }
@@ -18,8 +18,4 @@ const getTruncatedDate = (date, period) => {
     }
 
     return date;
-};
-
-module.exports = {
-    getTruncatedDate,
 };

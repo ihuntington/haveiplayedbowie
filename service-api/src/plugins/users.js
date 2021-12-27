@@ -1,9 +1,7 @@
-'use strict';
+import Boom from '@hapi/boom';
+import Joi from 'joi';
 
-const Boom = require('@hapi/boom');
-const Joi = require('joi');
-
-const usersPlugin = {
+export const usersPlugin = {
     name: 'users',
     register: async (server) => {
         const { db } = server.app;
@@ -144,5 +142,3 @@ const usersPlugin = {
         });
     },
 };
-
-module.exports = usersPlugin;

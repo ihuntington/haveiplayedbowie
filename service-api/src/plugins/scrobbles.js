@@ -1,11 +1,9 @@
-'use strict';
+import Boom from '@hapi/boom';
+import Joi from 'joi';
+import formatISO from 'date-fns/formatISO';
+import { getTruncatedDate } from '../utils/dates';
 
-const Boom = require('@hapi/boom');
-const Joi = require('joi');
-const formatISO = require('date-fns/formatISO');
-const { getTruncatedDate } = require('../utils/dates');
-
-const scrobblesPlugin = {
+export const scrobblesPlugin = {
     name: 'scrobbles',
     register: async (server) => {
         const { db } = server.app;
@@ -182,5 +180,3 @@ const scrobblesPlugin = {
         });
     },
 };
-
-module.exports = scrobblesPlugin;

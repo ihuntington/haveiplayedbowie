@@ -1,8 +1,6 @@
-'use strict';
-
-const process = require('process');
-const Hapi = require('@hapi/hapi');
-const plugins = require('./plugins');
+import process from 'process';
+import Hapi from '@hapi/hapi';
+import * as plugins from './plugins';
 
 let server;
 
@@ -12,23 +10,19 @@ async function setup() {
         port: process.env.PORT || 5000,
     });
 
-    await server.register([plugins.db]);
-    await server.register([plugins.artists]);
-    await server.register([plugins.charts]);
-    await server.register([plugins.scrobbles]);
-    await server.register([plugins.tracks]);
-    await server.register([plugins.users]);
+    await server.register([plugins.dbPlugin]);
+    await server.register([plugins.artistsPlugin]);
+    await server.register([plugins.chartsPlugin]);
+    await server.register([plugins.scrobblesPlugin]);
+    await server.register([plugins.tracksPlugin]);
+    await server.register([plugins.usersPlugin]);
 
     return server;
 }
 
-async function start() {
+export async function start() {
     await setup();
     await server.start();
     console.log(`Server running at ${server.info.uri}`);
     return server;
 }
-
-module.exports = {
-    start,
-};

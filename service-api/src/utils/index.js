@@ -24,7 +24,7 @@
     Code taken from https://github.com/mickhansen/dottie.js/blob/master/dottie.js
  */
 
-const pathToObject = (object) => {
+export const pathToObject = (object) => {
     if (Array.isArray(object)) {
         return object.map(function (o) {
             return transform(o);
@@ -73,8 +73,4 @@ const pathToObject = (object) => {
     }
 
     return transformed;
-};
-
-module.exports = {
-    pathToObject,
 };
