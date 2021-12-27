@@ -1,11 +1,9 @@
-'use strict';
+import Boom from '@hapi/boom';
+import Joi from 'joi';
+import endOfYear from 'date-fns/endOfYear';
+import startOfYear from 'date-fns/startOfYear';
 
-const Boom = require('@hapi/boom');
-const Joi = require('joi');
-const endOfYear = require('date-fns/endOfYear');
-const startOfYear = require('date-fns/startOfYear');
-
-const artistsPlugin = {
+export const artistsPlugin = {
     name: 'artistsPlugin',
     register: async (server) => {
         const { db } = server.app;
@@ -71,6 +69,3 @@ const artistsPlugin = {
         });
     },
 };
-
-
-module.exports = artistsPlugin;

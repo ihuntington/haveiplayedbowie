@@ -1,7 +1,5 @@
-'use strict';
-
-const sql = require('../../sql');
-const { pathToObject } = require('../../utils');
+import sql from'../../sql';
+import { pathToObject } from '../../utils';
 
 const transform = (row) => {
     return pathToObject(row);
@@ -35,7 +33,7 @@ const createWhereQuery = (where) => {
     return `WHERE ${newWhere.join(' AND ')}`;
 };
 
-class ScrobblesRepository {
+export class ScrobblesRepository {
     constructor(db, pgp) {
         this.db = db;
         this.pgp = pgp;
@@ -369,5 +367,3 @@ class ScrobblesRepository {
          }, (row) => Number(row.duration));
     }
 }
-
-module.exports = ScrobblesRepository;

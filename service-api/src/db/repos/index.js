@@ -1,6 +1,4 @@
-module.exports = {
-    Artists: require('./artists'),
-    Scrobbles: require('./scrobbles'),
-    Tracks: require('./tracks'),
-    Users: require('./users'),
-};
+export * from './artists';
+export * from './scrobbles';
+export * from './tracks';
+export * from './users';

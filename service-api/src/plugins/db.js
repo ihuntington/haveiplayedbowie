@@ -1,13 +1,9 @@
-'use strict';
+import { db, pgp } from '../db';
 
-const { db, pgp } = require('../db');
-
-const dbPlugin = {
+export const dbPlugin = {
     name: 'db',
     register: (server) => {
         server.app.db = db;
         server.app.pgp = pgp;
     },
 };
-
-module.exports = dbPlugin;

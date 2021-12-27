@@ -1,14 +1,21 @@
-'use strict';
+import Path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import * as pgPromisePkg from 'pg-promise';
 
-const Path = require('path');
-const { QueryFile } = require('pg-promise');
+// See https://docs.joshuatz.com/cheatsheets/node-and-npm/node-esm/#nodejs-built-ins-and-global-objects
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const pgPromise = pgPromisePkg.default;
+
+const { QueryFile } = pgPromise;
 
 function sql(file) {
     const filePath = Path.resolve(__dirname, 'sql', file);
     return new QueryFile(filePath, { minify: true });
 }
 
-module.exports = {
+export default {
     artists: {
         findByName: sql('artists/find-by-name.sql'),
         findBySpotify: sql('artists/find-by-spotify.sql'),

@@ -9,7 +9,7 @@
     "debug": "env-cmd -f .env.local nodemon --inspect src/index.js",
     "watch": "nodemon --watch './ts/**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' ts/index.ts",
     "dev": "tsc-watch --onSuccess \"npm run watch\"",
-    "start": "env-cmd -f .env.local node src/index.js",
+    "start": "env-cmd -f .env.local node --experimental-specifier-resolution=node src/index.js",
     "ts": "nodemon --loader ts-node/esm ./ts/index.ts"
   },
   "keywords": [],
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/hapi__hapi": "^20.0.10",
+    "@types/node": "^17.0.5",
     "env-cmd": "^10.1.0",
     "nodemon": "^2.0.15",
     "prisma": "^3.7.0",
