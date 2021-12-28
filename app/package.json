@@ -13,6 +13,7 @@
   "dependencies": {
     "@hapi/bell": "^12.1.0",
     "@hapi/boom": "^9.1.1",
+    "@hapi/catbox": "^11.1.1",
     "@hapi/cookie": "^11.0.1",
     "@hapi/hapi": "^19.0.5",
     "@hapi/inert": "^6.0.2",
