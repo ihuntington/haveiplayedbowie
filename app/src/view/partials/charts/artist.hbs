@@ -1,13 +1,16 @@
 <table class="chart-table columns-2">
     <thead>
         <tr>
-            <th>Artist</th>
+            <th colspan="2">Artist</th>
             <th class="chart-table__count">Plays</th>
         </tr>
     </thead>
     <tbody>
         {{#each this.items}}
         <tr>
+            <td>
+                <img src="{{coverImage this.images}}" width="80" height="80" alt="" />
+            </td>
             <td>
                 <a href="/artists/{{this.id}}">{{this.name}}</a>
             </td>
