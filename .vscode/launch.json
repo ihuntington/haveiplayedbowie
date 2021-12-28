@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Scripts - album art",
+            "program": "${workspaceFolder}/scripts/album-art.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node",
+            "envFile": "${workspaceFolder}/scripts/.env",
+            "runtimeArgs": ["--experimental-specifier-resolution=node"],
+            "cwd": "${workspaceFolder}/scripts"
+        },
+        {
             "name": "Launch API",
             "program": "${workspaceFolder}/service-api/src/index.js",
             "request": "launch",
@@ -53,6 +65,6 @@
             "env": {
                 "NODE_ENV": "development"
             }
-        }
+        },
     ]
 }
