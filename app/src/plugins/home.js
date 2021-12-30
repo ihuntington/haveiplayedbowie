@@ -8,20 +8,6 @@ const services = require('../services');
 const plugin = {
     name: 'app/home',
     register: async (server) => {
-        const cache = server.cache({
-            // cache: 'bowie',
-            expiresIn: 1000 * 60 * 5,
-            segment: 'artists',
-            generateFunc: async ({ id, date, period }) => {
-                console.log(`Cache ${id}`);
-                return await services.charts.getTopArtists({
-                    date,
-                    period,
-                });
-            },
-            generateTimeout: 2000,
-        });
-
         server.route({
             method: 'GET',
             path: '/',
