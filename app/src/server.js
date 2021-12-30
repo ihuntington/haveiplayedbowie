@@ -3,6 +3,7 @@
 const process = require('process');
 const Path = require('path');
 const Hapi = require('@hapi/hapi');
+const CatboxRedis = require("@hapi/catbox-redis");
 
 const plugins = require('./plugins');
 const { sessionValidator } = require('./validators/session');
@@ -20,10 +21,24 @@ const setup = async () => {
     server = Hapi.server({
         port: process.env.PORT || 8080,
         host: '0.0.0.0',
+        cache: [
+            {
+                name: "redis_cache",
+                provider: {
+                    constructor: CatboxRedis,
+                    options: {
+                        partition: "bowie",
+                        host: "localhost",
+                        port: 6379,
+                    }
+                }
+            }
+        ]
     });
 
     server.method("artists.chart", getTopArtists, {
         cache: {
+            cache: "redis_cache",
             generateTimeout: 2000,
             expiresIn: 1000 * 60,
             getDecoratedValue: true,
@@ -35,6 +50,7 @@ const setup = async () => {
 
     server.method("spotify.artists", getArtistsFromSpotify, {
         cache: {
+            cache: "redis_cache",
             generateTimeout: 30000,
             expiresIn: 1000 * 60,
             getDecoratedValue: true,

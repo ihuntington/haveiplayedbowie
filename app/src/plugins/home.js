@@ -49,13 +49,7 @@ const plugin = {
                         period: 'week',
                     });
 
-                    // const topArtists = await cache.get({
-                    //     id: `top-artists-week-${today}`,
-                    //     date: today,
-                    //     period: "week",
-                    // });
-
-                    const { value: artistsChartValue, cached } = await server.methods.artists.chart({
+                    const { value: artistsChartValue } = await server.methods.artists.chart({
                         date: today,
                         period: "week",
                     });
