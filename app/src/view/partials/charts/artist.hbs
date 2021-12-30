@@ -1,4 +1,4 @@
-<table class="chart-table columns-2">
+<table class="chart-table">
     <thead>
         <tr>
             <th colspan="2">Artist</th>
@@ -9,7 +9,7 @@
         {{#each this.items}}
         <tr>
             <td>
-                <img src="{{coverImage this.images}}" width="80" height="80" alt="" />
+                {{> images/cover images=this.images}}
             </td>
             <td>
                 <a href="/artists/{{this.id}}">{{this.name}}</a>
