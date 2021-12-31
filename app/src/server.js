@@ -15,7 +15,12 @@ let server = null;
 const getArtistsFromSpotify = async ({ ids }) => {
     const spotify = new Spotify();
     return await spotify.getArtists(ids);
-}
+};
+
+const getArtistFromSpotify = async ({ id }) => {
+    const spotify = new Spotify();
+    return await spotify.getArtist(id);
+};
 
 const setup = async () => {
     server = Hapi.server({
@@ -51,13 +56,23 @@ const setup = async () => {
     server.method("spotify.artists", getArtistsFromSpotify, {
         cache: {
             cache: "redis_cache",
-            generateTimeout: 30000,
+            generateTimeout: 2000,
             expiresIn: 1000 * 60,
             getDecoratedValue: true,
         },
         generateKey: ({ ids }) => {
             return `spotify-artists-${ids.join("-")}`;
         },
+    });
+
+    server.method("spotify.artist", getArtistFromSpotify, {
+        cache: {
+            cache: "redis_cache",
+            generateTimeout: 2000,
+            expiresIn: 1000 * 60,
+            getDecoratedValue: true,
+        },
+        generateKey: ({ id }) => id,
     });
 
     await server.register(require('@hapi/inert'));

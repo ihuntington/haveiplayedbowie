@@ -77,6 +77,25 @@ class Spotify {
             return null;
         }
     }
+
+    async getArtist(id) {
+        if (!this.token) {
+            await this.getAccessToken();
+        }
+
+        try {
+            const { payload } = await Wreck.get(`https://api.spotify.com/v1/artists/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token.access_token}`,
+                },
+                json: true,
+            });
+            return payload;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    }
 }
 
 module.exports = Spotify;

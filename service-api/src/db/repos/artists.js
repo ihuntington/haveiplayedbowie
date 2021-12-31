@@ -14,7 +14,7 @@ export class ArtistsRepository {
 
     async findById(id, context) {
         const ctx = context || this.db;
-        return ctx.one('SELECT id, name FROM artists WHERE id = $1', [id]);
+        return ctx.one('SELECT id, name, spotify_id FROM artists WHERE id = $1', [id]);
     }
 
     async findByTrack(id, context) {
