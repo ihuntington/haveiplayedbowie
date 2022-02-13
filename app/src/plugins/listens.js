@@ -68,7 +68,7 @@ const plugin = {
                 },
                 plugins: {
                     'hapi-auth-cookie': {
-                        // disable redirect to /login for an API route
+                        // Do not allow redirect to /login for an API route
                         redirectTo: false,
                     },
                 },
