@@ -10,7 +10,9 @@ import.meta.env = __SNOWPACK_ENV__;
  * - Check for isLive and only run if is on demand -- will break otherwise
  */
 (function hipbt_bbc_sounds () {
-    const { NODE_ENV, SNOWPACK_PUBLIC_BOWIE_URL, SNOWPACK_PUBLIC_BBC_URL } = import.meta.env;
+    const SNOWPACK_PUBLIC_BOWIE_URL = "https://www.bowie.test";
+    const SNOWPACK_PUBLIC_BBC_URL = "https://www.bbc.co.uk";
+    const { NODE_ENV } = import.meta.env;
     const URLS = {
         SEGMENTS: 'https://rms.api.bbc.co.uk/v2/services/bbc_6music/segments/latest',
     };
@@ -21,7 +23,7 @@ import.meta.env = __SNOWPACK_ENV__;
 
             this.log("HIPBT x BBC Sounds start");
 
-            this._player = this.getEmbeddedPlayers()['smp-wrapper'];
+            this._player = this.getPlayer();
             this.currentTime = this._player.currentTime() * 1000;
             // TODO: if on demand the take first track from preloaded state
             this.currentTrack = null;
@@ -52,8 +54,8 @@ import.meta.env = __SNOWPACK_ENV__;
         setup() {
             this.debug('HIPBT Setup');
 
-            const sharedEvents = ['playing', 'pause', 'seeking', 'userPlay'];
-            const liveEvents = ['significantTimeUpdate'];
+            const sharedEvents = ['playing', 'pause', 'userPlay', 'SonarSeekEvent'];
+            const liveEvents = ['significanttimeupdate'];
             const onDemandEvents = ['continuousPlayChange', 'timeupdate'];
 
             let events = [];
@@ -201,15 +203,15 @@ import.meta.env = __SNOWPACK_ENV__;
                     break;
                 }
 
-                case 'seeking': {
-                    this.log('> seeking', event);
+                case 'SonarSeekEvent': {
                     this.seeking = true;
                 }
             }
         };
 
-        getEmbeddedPlayers() {
-            return window.embeddedMedia.api.players();
+        getPlayer() {
+            const players = window.embeddedMedia.api.players();
+            return players["smp-wrapper"];
         };
 
         getPreloadedState() {
