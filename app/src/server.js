@@ -13,6 +13,10 @@ const Spotify = require("./library/spotify");
 let server = null;
 
 const getArtistsFromSpotify = async ({ ids }) => {
+    if (!ids.length) {
+        return [];
+    }
+
     const spotify = new Spotify();
     return await spotify.getArtists(ids);
 };
