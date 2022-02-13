@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "exports": "./dist/index.js",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "debug": "env-cmd -f .env.local nodemon --inspect src/index.js",
     "watch": "nodemon --watch './ts/**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' ts/index.ts",
