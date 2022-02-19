@@ -10,7 +10,7 @@ import.meta.env = __SNOWPACK_ENV__;
  * - Check for isLive and only run if is on demand -- will break otherwise
  */
 (function hipbt_bbc_sounds () {
-    const SNOWPACK_PUBLIC_BOWIE_URL = "https://www.bowie.test";
+    const SNOWPACK_PUBLIC_BOWIE_URL = "https://www.haveiplayedbowie.today";
     const SNOWPACK_PUBLIC_BBC_URL = "https://www.bbc.co.uk";
     const { NODE_ENV } = import.meta.env;
     const URLS = {
