@@ -24,6 +24,12 @@ import.meta.env = __SNOWPACK_ENV__;
             this.log("HIPBT x BBC Sounds start");
 
             this._player = this.getPlayer();
+
+            if (!this._player) {
+                this.error("Could not find player");
+                return;
+            }
+
             this.currentTime = this._player.currentTime() * 1000;
             // TODO: if on demand the take first track from preloaded state
             this.currentTrack = null;
@@ -211,6 +217,11 @@ import.meta.env = __SNOWPACK_ENV__;
 
         getPlayer() {
             const players = window.embeddedMedia.api.players();
+
+            if (!players.length) {
+                return null;
+            }
+
             return players["smp-wrapper"];
         };
 
