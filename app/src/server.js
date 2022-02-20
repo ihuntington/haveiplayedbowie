@@ -39,6 +39,7 @@ const setup = async () => {
                         partition: "bowie",
                         host: "localhost",
                         port: 6379,
+                        password: process.env.REDIS_PASSWORD,
                     }
                 }
             }
