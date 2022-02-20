@@ -63,7 +63,7 @@ class Spotify {
         if (!this.token) {
             await this.getAccessToken();
         }
-        console.log("spotify class get artists", ids)
+
         try {
             const { payload } = await Wreck.get(`https://api.spotify.com/v1/artists?ids=${ids.join(",")}`, {
                 headers: {
