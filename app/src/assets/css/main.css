@@ -192,6 +192,10 @@ h3 span {
     vertical-align: top;
 }
 
+.chart-table--image th, .chart-table--image td {
+    padding: .5rem;
+}
+
 .chart-table thead th {
     border-bottom: 1px solid hsl(0, 0%, 2.7%);
     font-weight: 600;
@@ -455,6 +459,16 @@ h3 span {
     display: flex;
     align-items: center;
     height: 200px;
+}
+
+.image {
+    display: block;
+    margin-right: 1rem;
+    object-fit: cover;
+}
+
+.image__wrapper {
+    display: flex;
 }
 
 @media (min-width: 32rem) {

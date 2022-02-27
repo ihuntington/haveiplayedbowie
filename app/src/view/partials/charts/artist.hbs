@@ -1,7 +1,7 @@
-<table class="chart-table">
+<table class="chart-table chart-table--image">
     <thead>
         <tr>
-            <th colspan="2">Artist</th>
+            <th>Artist</th>
             <th class="chart-table__count">Plays</th>
         </tr>
     </thead>
@@ -9,10 +9,10 @@
         {{#each this.items}}
         <tr>
             <td>
-                {{> images/cover images=this.images}}
-            </td>
-            <td>
-                <a href="/artists/{{this.id}}">{{this.name}}</a>
+                <div class="image__wrapper">
+                    {{> images/cover images=this.images}}
+                    <a href="/artists/{{this.id}}">{{this.name}}</a>
+                </div>
             </td>
             <td class="chart-table__count">
                 {{this.total}}
