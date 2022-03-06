@@ -152,6 +152,14 @@ const setup = async () => {
     });
 
     server.route({
+        method: "GET",
+        path: "/test",
+        handler: () => {
+            return "test";
+        },
+    });
+
+    server.route({
         method: 'GET',
         path: '/bookmarklet/{param*}',
         options: {
