@@ -54,7 +54,8 @@ const plugin = {
                         period: "week",
                     });
 
-                    const ids = artistsChartValue.items.map((x) => x.spotify_id);
+                    // TODO: fix data where artists are missing a Spotify ID
+                    const ids = artistsChartValue.items.map((x) => x.spotify_id).filter((id) => Boolean(id))
 
                     const { value: spotifyValue } = await server.methods.spotify.artists({
                         ids,
